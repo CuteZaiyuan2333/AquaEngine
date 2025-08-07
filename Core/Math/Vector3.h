@@ -66,6 +66,13 @@ public:
         return *this;
     }
 
+    Vector3& operator/=(float scalar) {
+        x /= scalar;
+        y /= scalar;
+        z /= scalar;
+        return *this;
+    }
+
     // 点积
     float Dot(const Vector3& other) const {
         return x * other.x + y * other.y + z * other.z;

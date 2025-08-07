@@ -62,6 +62,8 @@ void Shader::Cleanup() {
 std::vector<uint32_t> Shader::CompileGLSL(const std::string& source, Type type) {
     // Note: This requires integration with glslang or shaderc library to compile GLSL
     // For simplicity, we return empty vector for now, actual projects need to implement GLSL compilation
+    (void)source; // Suppress unused parameter warning
+    (void)type;   // Suppress unused parameter warning
     std::cerr << "GLSL compilation not implemented yet, please use pre-compiled SPIR-V files" << std::endl;
     return {};
 }

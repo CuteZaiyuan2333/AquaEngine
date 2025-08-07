@@ -58,6 +58,19 @@ Renderer::~Renderer() {
 bool Renderer::Initialize(std::shared_ptr<VulkanContext> vulkanContext) {
     m_vulkanContext = vulkanContext;
     
+    // Initialize vertex data
+    m_vertices = {
+        {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        {{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
+        {{-0.5f,  0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}}
+    };
+    
+    // Initialize index data
+    m_indices = {
+        0, 1, 2, 2, 3, 0
+    };
+    
     if (!CreateRenderPass()) return false;
     if (!CreateDescriptorSetLayout()) return false;
     if (!CreateGraphicsPipeline()) return false;
@@ -309,11 +322,11 @@ bool Renderer::CreateDescriptorSetLayout() {
 
 bool Renderer::CreateGraphicsPipeline() {
     // Create shader program
-    m_shaderProgram = std::make_unique<ShaderProgram>();
+    m_shaderProgram = std::make_unique<ShaderProgram>(m_vulkanContext->GetDevice());
     
     // Load vertex shader
-    Shader vertexShader;
-    if (!vertexShader.LoadFromSpirv("Assets/Shaders/triangle.vert.spv", VK_SHADER_STAGE_VERTEX_BIT)) {
+    Shader vertexShader(m_vulkanContext->GetDevice());
+    if (!vertexShader.LoadFromSpirv("Assets/Shaders/triangle.vert.spv", Shader::Type::Vertex)) {
         std::cerr << "Failed to load vertex shader" << std::endl;
         return false;
     }
@@ -321,8 +334,8 @@ bool Renderer::CreateGraphicsPipeline() {
     std::cout << "Vertex shader loaded and added to program" << std::endl;
     
     // Load fragment shader
-    Shader fragmentShader;
-    if (!fragmentShader.LoadFromSpirv("Assets/Shaders/triangle.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT)) {
+    Shader fragmentShader(m_vulkanContext->GetDevice());
+    if (!fragmentShader.LoadFromSpirv("Assets/Shaders/triangle.frag.spv", Shader::Type::Fragment)) {
         std::cerr << "Failed to load fragment shader" << std::endl;
         return false;
     }

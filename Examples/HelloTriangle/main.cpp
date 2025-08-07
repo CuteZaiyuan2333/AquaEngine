@@ -41,7 +41,7 @@ public:
         return true;
     }
     
-    void Update(float deltaTime) override {
+    void Update() override {
         // Update logic
     }
     

@@ -1,0 +1,10 @@
+^G:\DOCUMENT\AQUAENGINE\BUILD_SIMPLE_TRIANGLE\CMAKELISTS.TXT
+setlocal
+D:\WinApplication\cmake-3.28.1-windows-x86_64\bin\cmake.exe -SG:/Document/AquaEngine/Build_Simple_Triangle -BG:/Document/AquaEngine/Build_Simple_Triangle --check-stamp-file G:/Document/AquaEngine/Build_Simple_Triangle/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -5,6 +5,8 @@
 #include <string>
 #include <optional>
 
+struct GLFWwindow;
+
 namespace Aqua {
 namespace Renderer {
 
@@ -29,8 +31,9 @@ public:
     ~VulkanContext();
 
     // 初始化Vulkan
-    bool Initialize(void* windowHandle, uint32_t width, uint32_t height);
+    bool Initialize(GLFWwindow* window, uint32_t width, uint32_t height);
     void Cleanup();
+    void RecreateSwapchain();
 
     // 获取Vulkan对象
     VkInstance GetInstance() const { return m_instance; }
@@ -40,6 +43,7 @@ public:
     VkSwapchainKHR GetSwapchain() const { return m_swapchain; }
     VkQueue GetGraphicsQueue() const { return m_graphicsQueue; }
     VkQueue GetPresentQueue() const { return m_presentQueue; }
+    uint32_t GetGraphicsQueueFamily() const { return m_graphicsQueueFamily; }
 
     // 获取交换链信息
     VkFormat GetSwapchainImageFormat() const { return m_swapchainImageFormat; }
@@ -58,6 +62,7 @@ private:
     // 队列
     VkQueue m_graphicsQueue = VK_NULL_HANDLE;
     VkQueue m_presentQueue = VK_NULL_HANDLE;
+    uint32_t m_graphicsQueueFamily = 0;
     
     // 交换链相关
     VkFormat m_swapchainImageFormat;
@@ -71,7 +76,7 @@ private:
     // 私有方法
     bool CreateInstance();
     bool SetupDebugMessenger();
-    bool CreateSurface(void* windowHandle);
+    bool CreateSurface(GLFWwindow* window);
     bool PickPhysicalDevice();
     bool CreateLogicalDevice();
     bool CreateSwapchain(uint32_t width, uint32_t height);

@@ -1,0 +1,10 @@
+^G:\DOCUMENT\AQUAENGINE\EXAMPLES\TEXTURETEST\CMAKELISTS.TXT
+setlocal
+D:\WinApplication\cmake-3.28.1-windows-x86_64\bin\cmake.exe -SG:/Document/AquaEngine -BG:/Document/AquaEngine/Build_Full --check-stamp-file G:/Document/AquaEngine/Build_Full/Examples/TextureTest/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

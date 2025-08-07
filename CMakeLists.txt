@@ -27,19 +27,18 @@ endif()
 # 查找Vulkan
 find_package(Vulkan REQUIRED)
 
-# 查找GLFW (用于窗口管理)
-find_package(glfw3 REQUIRED)
-
 # 包含目录
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # 添加子目录
 add_subdirectory(Core)
-add_subdirectory(Engine)
 add_subdirectory(Examples)
 
 # 创建主要的引擎库
-add_library(AquaEngine STATIC)
+add_library(AquaEngine STATIC
+    # 暂时添加一个空的源文件，稍后会链接Core库
+    Core/Math/Vector3.cpp
+)
 
 # 设置目标属性
 set_target_properties(AquaEngine PROPERTIES
@@ -51,7 +50,6 @@ set_target_properties(AquaEngine PROPERTIES
 target_link_libraries(AquaEngine 
     PUBLIC 
         Vulkan::Vulkan
-        glfw
 )
 
 # 包含头文件目录
