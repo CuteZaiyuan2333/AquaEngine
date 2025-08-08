@@ -1,0 +1,2 @@
+Test texture directory created
+Place PNG/JPG test images here for texture loading tests
