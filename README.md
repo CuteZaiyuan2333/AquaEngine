@@ -80,8 +80,8 @@ AquaEngine/
 
 ### 1. 克隆项目
 ```bash
-git clone https://github.com/CuteZaiyuan2333/AquaEngine-TextureSystem.git
-cd AquaEngine-TextureSystem
+git clone https://github.com/CuteZaiyuan2333/AquaEngine.git
+cd AquaEngine
 ```
 
 ### 2. 构建项目

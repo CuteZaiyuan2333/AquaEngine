@@ -177,8 +177,8 @@ cmake --build build_texture_demo --config Debug
 
 ---
 
-**下载链接**: [GitHub Release](https://github.com/your-repo/AquaEngine/releases/v1.0)  
+**下载链接**: [GitHub Release](https://github.com/CuteZaiyuan2333/AquaEngine/releases/v1.0)  
 **文档**: [完整文档](./TEXTURE_SYSTEM_STATUS.md)  
-**问题反馈**: [GitHub Issues](https://github.com/your-repo/AquaEngine/issues)
+**问题反馈**: [GitHub Issues](https://github.com/CuteZaiyuan2333/AquaEngine/issues)
 
 🎉 **感谢使用AquaEngine v1.0！**
