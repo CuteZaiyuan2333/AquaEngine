@@ -1,75 +1,78 @@
 #include "../../Core/Platform/Application.h"
-#include "../../Core/Renderer/Renderer.h"
-#include "../../Core/Math/Vector3.h"
-#include "../../Core/Math/Matrix4.h"
+#include "../../Core/Renderer/TriangleRenderer.h"
 #include <iostream>
 #include <memory>
 
 class HelloTriangleApp : public Aqua::Platform::Application {
 private:
-    std::unique_ptr<Aqua::Renderer::Renderer> m_renderer;
+    std::unique_ptr<Aqua::Renderer::TriangleRenderer> m_triangleRenderer;
 
 public:
+    HelloTriangleApp() {
+        m_triangleRenderer = std::make_unique<Aqua::Renderer::TriangleRenderer>();
+    }
+
+    ~HelloTriangleApp() override {
+        Cleanup();
+    }
+
     bool Initialize() override {
-        // Call base class initialization method
+        std::cout << "Initializing Hello Triangle application..." << std::endl;
+
         if (!Aqua::Platform::Application::Initialize()) {
-            std::cerr << "Base class initialization failed" << std::endl;
+            std::cerr << "Failed to initialize base application" << std::endl;
             return false;
         }
-        
-        std::cout << "HelloTriangle application initialization" << std::endl;
-        
-        // Create renderer
-        m_renderer = std::make_unique<Aqua::Renderer::Renderer>();
-        if (!m_renderer->Initialize(GetVulkanContext())) {
-            std::cerr << "Renderer initialization failed" << std::endl;
+
+        if (!m_triangleRenderer->Initialize(GetVulkanContext())) {
+            std::cerr << "Failed to initialize triangle renderer" << std::endl;
             return false;
         }
-        
-        // Test math library
-        Aqua::Math::Vector3 v1(1.0f, 2.0f, 3.0f);
-        Aqua::Math::Vector3 v2(4.0f, 5.0f, 6.0f);
-        Aqua::Math::Vector3 result = v1 + v2;
-        
-        std::cout << "Vector addition test: (" << result.x << ", " << result.y << ", " << result.z << ")" << std::endl;
-        
-        // Test matrix
-        Aqua::Math::Matrix4 identity;
-        identity.Identity();
-        std::cout << "Identity matrix created successfully" << std::endl;
-        
+
+        std::cout << "Hello Triangle application initialized successfully" << std::endl;
         return true;
     }
-    
+
     void Update() override {
-        // Update logic
+        // Basic update logic
     }
-    
+
     void Render() override {
-        if (m_renderer) {
-            if (m_renderer->BeginFrame()) {
-                m_renderer->RenderTriangle();
-                m_renderer->EndFrame();
-            }
+        if (!m_triangleRenderer->BeginFrame()) {
+            return;
+        }
+
+        m_triangleRenderer->RenderTriangle();
+
+        if (!m_triangleRenderer->EndFrame()) {
+            std::cerr << "Failed to end frame" << std::endl;
         }
     }
-    
+
     void Cleanup() override {
-        std::cout << "HelloTriangle application cleanup" << std::endl;
-        
-        // Cleanup renderer
-        if (m_renderer) {
-            m_renderer->Cleanup();
-            m_renderer.reset();
+        if (m_triangleRenderer) {
+            m_triangleRenderer.reset();
         }
-        
-        // Call base class cleanup method
         Aqua::Platform::Application::Cleanup();
     }
 };
 
 int main() {
-    HelloTriangleApp app;
-    app.Run();
-    return 0;
+    try {
+        HelloTriangleApp app;
+        
+        if (!app.Initialize()) {
+            std::cerr << "Failed to initialize application" << std::endl;
+            return -1;
+        }
+
+        app.Run();
+        
+        std::cout << "Application finished successfully" << std::endl;
+        return 0;
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
+        return -1;
+    }
 }

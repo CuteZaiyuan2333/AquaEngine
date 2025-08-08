@@ -16,19 +16,19 @@ public:
     Application();
     virtual ~Application();
 
-    // 运行应用程序
+    // Run the application
     void Run();
 
-    // 虚函数，供子类重写
+    // Virtual functions for subclasses to override
     virtual bool Initialize();
     virtual void Update();
     virtual void Render();
     virtual void Cleanup();
 
-    // 获取Vulkan上下文
+    // Get Vulkan context
     std::shared_ptr<Renderer::VulkanContext> GetVulkanContext() const;
     
-    // 获取窗口
+    // Get window
     std::shared_ptr<AquaEngine::Platform::Window> GetWindow() const { return m_window; }
 
 protected:

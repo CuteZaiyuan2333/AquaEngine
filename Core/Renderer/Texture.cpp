@@ -20,17 +20,32 @@ void Texture::SetVulkanContext(Aqua::Renderer::VulkanContext* context) {
     s_vulkanContext = context;
 }
 
-Texture::Texture() {
-  // Constructor is temporarily empty
+Texture::Texture() 
+    : m_image(VK_NULL_HANDLE)
+    , m_imageMemory(VK_NULL_HANDLE)
+    , m_imageView(VK_NULL_HANDLE)
+    , m_sampler(VK_NULL_HANDLE)
+    , m_width(0)
+    , m_height(0)
+    , m_channels(0) {
+    // Initialize all members to safe default values
 }
 
 Texture::~Texture() { Cleanup(); }
 
 bool Texture::LoadFromFile(const std::string &filepath) {
   if (!s_vulkanContext) {
-    std::cerr << "VulkanContext not set for texture loading" << std::endl;
+    std::cerr << "Error: VulkanContext not set for texture loading" << std::endl;
     return false;
   }
+
+  if (filepath.empty()) {
+    std::cerr << "Error: Empty filepath provided for texture loading" << std::endl;
+    return false;
+  }
+
+  // Clean up any existing texture data
+  Cleanup();
 
   // Step 1: Load image data using stb_image
   std::cout << "Loading texture from: " << filepath << std::endl;
@@ -62,9 +77,18 @@ bool Texture::LoadFromFile(const std::string &filepath) {
 }
 
 bool Texture::CreateVulkanTexture(unsigned char* data, uint32_t width, uint32_t height) {
+  if (!data) {
+    std::cerr << "Error: Null data pointer provided to CreateVulkanTexture" << std::endl;
+    return false;
+  }
+
+  if (width == 0 || height == 0) {
+    std::cerr << "Error: Invalid texture dimensions: " << width << "x" << height << std::endl;
+    return false;
+  }
+
   VkDevice device = s_vulkanContext->GetDevice();
   VkPhysicalDevice physicalDevice = s_vulkanContext->GetPhysicalDevice();
-  VkQueue graphicsQueue = s_vulkanContext->GetGraphicsQueue();
 
   VkDeviceSize imageSize = width * height * 4; // RGBA
 
@@ -170,7 +194,53 @@ bool Texture::CreateVulkanTexture(unsigned char* data, uint32_t width, uint32_t 
   return true;
 }
 
+bool Texture::CreateImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, 
+                         VkImageUsageFlags usage, VkMemoryPropertyFlags properties, 
+                         VkImage& image, VkDeviceMemory& imageMemory) {
+  VkDevice device = s_vulkanContext->GetDevice();
+  VkPhysicalDevice physicalDevice = s_vulkanContext->GetPhysicalDevice();
+
+  VkImageCreateInfo imageInfo{};
+  imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+  imageInfo.imageType = VK_IMAGE_TYPE_2D;
+  imageInfo.extent.width = width;
+  imageInfo.extent.height = height;
+  imageInfo.extent.depth = 1;
+  imageInfo.mipLevels = 1;
+  imageInfo.arrayLayers = 1;
+  imageInfo.format = format;
+  imageInfo.tiling = tiling;
+  imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+  imageInfo.usage = usage;
+  imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+  imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+    return false;
+  }
+
+  VkMemoryRequirements memRequirements;
+  vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+  VkMemoryAllocateInfo allocInfo{};
+  allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  allocInfo.allocationSize = memRequirements.size;
+  allocInfo.memoryTypeIndex = FindMemoryType(physicalDevice, memRequirements.memoryTypeBits, properties);
+
+  if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+    vkDestroyImage(device, image, nullptr);
+    return false;
+  }
+
+  vkBindImageMemory(device, image, imageMemory, 0);
+  return true;
+}
+
 uint32_t Texture::FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+  if (physicalDevice == VK_NULL_HANDLE) {
+    throw std::runtime_error("Invalid physical device handle!");
+  }
+
   VkPhysicalDeviceMemoryProperties memProperties;
   vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
 
@@ -180,10 +250,11 @@ uint32_t Texture::FindMemoryType(VkPhysicalDevice physicalDevice, uint32_t typeF
     }
   }
 
+  std::cerr << "Error: Failed to find suitable memory type with properties: " << properties << std::endl;
   throw std::runtime_error("Failed to find suitable memory type!");
 }
 
-void Texture::TransitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+void Texture::TransitionImageLayout(VkImage image, VkFormat /*format*/, VkImageLayout oldLayout, VkImageLayout newLayout) {
   VkCommandBuffer commandBuffer = BeginSingleTimeCommands();
 
   VkImageMemoryBarrier barrier{};
@@ -318,6 +389,10 @@ bool Texture::CreateSampler(VkSampler& sampler) {
   VkPhysicalDeviceProperties properties{};
   vkGetPhysicalDeviceProperties(s_vulkanContext->GetPhysicalDevice(), &properties);
 
+  // Check if anisotropic filtering is supported
+  VkPhysicalDeviceFeatures deviceFeatures{};
+  vkGetPhysicalDeviceFeatures(s_vulkanContext->GetPhysicalDevice(), &deviceFeatures);
+
   VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
   samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -325,8 +400,16 @@ bool Texture::CreateSampler(VkSampler& sampler) {
   samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
   samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-  samplerInfo.anisotropyEnable = VK_TRUE;
-  samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+  
+  // Only enable anisotropy if the device supports it
+  if (deviceFeatures.samplerAnisotropy) {
+    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+  } else {
+    samplerInfo.anisotropyEnable = VK_FALSE;
+    samplerInfo.maxAnisotropy = 1.0f;
+  }
+  
   samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
   samplerInfo.unnormalizedCoordinates = VK_FALSE;
   samplerInfo.compareEnable = VK_FALSE;
@@ -343,6 +426,9 @@ bool Texture::CreateSampler(VkSampler& sampler) {
 void Texture::Cleanup() {
   if (s_vulkanContext && s_vulkanContext->GetDevice()) {
     VkDevice device = s_vulkanContext->GetDevice();
+    
+    // Wait for device to be idle before destroying resources
+    vkDeviceWaitIdle(device);
     
     if (m_sampler != VK_NULL_HANDLE) {
       vkDestroySampler(device, m_sampler, nullptr);
@@ -363,6 +449,19 @@ void Texture::Cleanup() {
       vkFreeMemory(device, m_imageMemory, nullptr);
       m_imageMemory = VK_NULL_HANDLE;
     }
+  }
+  
+  // Reset dimensions
+  m_width = 0;
+  m_height = 0;
+  m_channels = 0;
+}
+
+// Static method to cleanup shared resources
+void Texture::CleanupStaticResources() {
+  if (s_vulkanContext && s_commandPool != VK_NULL_HANDLE) {
+    vkDestroyCommandPool(s_vulkanContext->GetDevice(), s_commandPool, nullptr);
+    s_commandPool = VK_NULL_HANDLE;
   }
 }
 

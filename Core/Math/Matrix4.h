@@ -9,17 +9,17 @@ namespace Math {
 
 class Matrix4 {
 public:
-    // 使用列主序存储 (OpenGL/Vulkan标准)
+    // Use column-major storage (OpenGL/Vulkan standard)
     std::array<float, 16> m;
 
-    // 构造函数
+    // Constructors
     Matrix4() {
         Identity();
     }
 
     Matrix4(const std::array<float, 16>& values) : m(values) {}
 
-    // 访问操作符
+    // Access operators
     float& operator()(int row, int col) {
         return m[col * 4 + row];
     }
@@ -28,7 +28,7 @@ public:
         return m[col * 4 + row];
     }
 
-    // 矩阵运算
+    // Matrix operations
     Matrix4 operator*(const Matrix4& other) const {
         Matrix4 result;
         for (int i = 0; i < 4; ++i) {
@@ -42,7 +42,7 @@ public:
         return result;
     }
 
-    // 向量变换
+    // Vector transformations
     Vector3 TransformPoint(const Vector3& point) const {
         float x = point.x * m[0] + point.y * m[4] + point.z * m[8] + m[12];
         float y = point.x * m[1] + point.y * m[5] + point.z * m[9] + m[13];
@@ -62,7 +62,7 @@ public:
         return Vector3(x, y, z);
     }
 
-    // 设置为单位矩阵
+    // Set to identity matrix
     void Identity() {
         m = {
             1.0f, 0.0f, 0.0f, 0.0f,
@@ -72,7 +72,7 @@ public:
         };
     }
 
-    // 平移矩阵
+    // Translation matrix
     static Matrix4 Translation(const Vector3& translation) {
         Matrix4 result;
         result.m[12] = translation.x;
@@ -81,7 +81,7 @@ public:
         return result;
     }
 
-    // 缩放矩阵
+    // Scale matrix
     static Matrix4 Scale(const Vector3& scale) {
         Matrix4 result;
         result.m[0] = scale.x;
@@ -90,7 +90,7 @@ public:
         return result;
     }
 
-    // 绕X轴旋转
+    // Rotation around X axis
     static Matrix4 RotationX(float angle) {
         Matrix4 result;
         float cos_a = std::cos(angle);
@@ -104,7 +104,7 @@ public:
         return result;
     }
 
-    // 绕Y轴旋转
+    // Rotation around Y axis
     static Matrix4 RotationY(float angle) {
         Matrix4 result;
         float cos_a = std::cos(angle);
@@ -118,7 +118,7 @@ public:
         return result;
     }
 
-    // 绕Z轴旋转
+    // Rotation around Z axis
     static Matrix4 RotationZ(float angle) {
         Matrix4 result;
         float cos_a = std::cos(angle);
@@ -132,7 +132,7 @@ public:
         return result;
     }
 
-    // 透视投影矩阵
+    // Perspective projection matrix
     static Matrix4 Perspective(float fov, float aspect, float near_plane, float far_plane) {
         Matrix4 result;
         result.m.fill(0.0f);
@@ -148,7 +148,7 @@ public:
         return result;
     }
 
-    // 视图矩阵 (LookAt)
+    // View matrix (LookAt)
     static Matrix4 LookAt(const Vector3& eye, const Vector3& center, const Vector3& up) {
         Vector3 f = (center - eye).Normalized();
         Vector3 s = f.Cross(up).Normalized();
@@ -172,7 +172,7 @@ public:
         return result;
     }
 
-    // 获取数据指针（用于传递给GPU）
+    // Get data pointer (for passing to GPU)
     const float* Data() const {
         return m.data();
     }

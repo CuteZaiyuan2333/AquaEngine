@@ -1,6 +1,6 @@
-# Core模块CMakeLists.txt
+# Core module CMakeLists.txt
 
-# 收集所有源文件
+# Collect all source files
 file(GLOB_RECURSE CORE_SOURCES
     "Math/*.cpp"
     "Math/*.h"
@@ -10,38 +10,54 @@ file(GLOB_RECURSE CORE_SOURCES
     "Platform/*.h"
     "Memory/*.cpp"
     "Memory/*.h"
+    "Utils/*.cpp"
+    "Utils/*.h"
 )
 
-# 创建Core库
+# Create Core library
 add_library(AquaCore STATIC ${CORE_SOURCES})
 
-# 设置目标属性
+# Set target properties
 set_target_properties(AquaCore PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
 
-# 设置GLFW路径
-set(GLFW_ROOT "D:/WinApplication/glfw/glfw-3.4.bin.WIN64")
-set(GLFW_INCLUDE_DIR "${GLFW_ROOT}/include")
-set(GLFW_LIBRARY_DIR "${GLFW_ROOT}/lib-vc2022")
+# Find GLFW
+find_package(glfw3 QUIET)
+if(NOT glfw3_FOUND)
+    # Fallback to manual path if package not found
+    if(WIN32)
+        set(GLFW_ROOT "D:/WinApplication/glfw/glfw-3.4.bin.WIN64" CACHE PATH "GLFW root directory")
+        set(GLFW_INCLUDE_DIR "${GLFW_ROOT}/include")
+        set(GLFW_LIBRARY_DIR "${GLFW_ROOT}/lib-vc2022")
+        
+        # Create imported target for GLFW
+        add_library(glfw STATIC IMPORTED)
+        set_target_properties(glfw PROPERTIES
+            IMPORTED_LOCATION "${GLFW_LIBRARY_DIR}/glfw3.lib"
+            INTERFACE_INCLUDE_DIRECTORIES "${GLFW_INCLUDE_DIR}"
+        )
+    else()
+        message(FATAL_ERROR "GLFW not found. Please install GLFW or set GLFW_ROOT")
+    endif()
+endif()
 
-# 链接依赖
+# Link dependencies
 target_link_libraries(AquaCore 
     PUBLIC 
         Vulkan::Vulkan
-        "${GLFW_LIBRARY_DIR}/glfw3.lib"
+        $<IF:$<TARGET_EXISTS:glfw>,glfw,$<IF:$<TARGET_EXISTS:glfw3>,glfw3,glfw>>
 )
 
-# 包含目录
+# Include directories
 target_include_directories(AquaCore 
     PUBLIC 
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${Vulkan_INCLUDE_DIRS}
-        ${GLFW_INCLUDE_DIR}
 )
 
-# 编译定义
+# Compile definitions
 target_compile_definitions(AquaCore 
     PUBLIC
         $<$<CONFIG:Debug>:AQUA_DEBUG>

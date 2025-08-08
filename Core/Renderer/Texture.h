@@ -10,9 +10,16 @@ class Texture {
 public:
   Texture();
   ~Texture();
+  
+  // Disable copy constructor and assignment operator to prevent resource management issues
+  Texture(const Texture&) = delete;
+  Texture& operator=(const Texture&) = delete;
 
   // Static method to set VulkanContext for all texture operations
   static void SetVulkanContext(Aqua::Renderer::VulkanContext *context);
+  
+  // Static method to cleanup shared resources (call before VulkanContext destruction)
+  static void CleanupStaticResources();
 
   // Basic texture loading functionality
   bool LoadFromFile(const std::string &filePath);

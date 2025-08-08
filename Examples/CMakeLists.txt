@@ -1,27 +1,33 @@
-# Examples模块CMakeLists.txt
-cmake_minimum_required(VERSION 3.20)
+# Examples CMakeLists.txt
 
-# HelloTriangle示例
-add_executable(HelloTriangle
-    HelloTriangle/main.cpp
+# Add subdirectories for each example
+add_subdirectory(HelloTriangle)
+add_subdirectory(TextureDemo)
+add_subdirectory(SimpleTextureDemo)
+add_subdirectory(TextureShowcase)
+add_subdirectory(SimpleTextureShow)
+add_subdirectory(TextureRenderDemo)
+add_subdirectory(BasicTextureDemo)
+add_subdirectory(TextureWindowDemo)
+add_subdirectory(TextureRenderingDemo)
+add_subdirectory(SimpleTextureRender)
+
+# TextureTest example
+add_executable(TextureTest TextureTest/main.cpp)
+
+# Set C++ standard
+set_property(TARGET TextureTest PROPERTY CXX_STANDARD 20)
+
+# Link libraries
+target_link_libraries(TextureTest PRIVATE AquaCore AquaEngine)
+
+# Include directories
+target_include_directories(TextureTest PRIVATE 
+    ${CMAKE_SOURCE_DIR}/Core
+    ${CMAKE_SOURCE_DIR}/Engine
 )
 
-# 设置C++标准
-set_property(TARGET HelloTriangle PROPERTY CXX_STANDARD 20)
-set_property(TARGET HelloTriangle PROPERTY CXX_STANDARD_REQUIRED ON)
-
-# 链接库
-target_link_libraries(HelloTriangle 
-    AquaCore 
-    AquaEngine
-)
-
-# 设置包含目录
-target_include_directories(HelloTriangle PRIVATE
-    ${CMAKE_SOURCE_DIR}
-)
-
-# 设置输出目录
-set_target_properties(HelloTriangle PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/examples
+# Set output directory
+set_target_properties(TextureTest PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/examples/$<CONFIG>
 )

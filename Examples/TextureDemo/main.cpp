@@ -172,6 +172,9 @@ public:
     m_textures.clear();
     m_textureNames.clear();
 
+    // Cleanup static texture resources before destroying VulkanContext
+    AquaEngine::Texture::CleanupStaticResources();
+
     // Cleanup renderer
     if (m_renderer) {
       m_renderer->Cleanup();

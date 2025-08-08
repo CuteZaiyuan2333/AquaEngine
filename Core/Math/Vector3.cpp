@@ -3,7 +3,7 @@
 namespace Aqua {
 namespace Math {
 
-// 静态成员变量定义
+// Static member variable definitions
 const Vector3 Vector3::Zero(0.0f, 0.0f, 0.0f);
 const Vector3 Vector3::One(1.0f, 1.0f, 1.0f);
 const Vector3 Vector3::Up(0.0f, 1.0f, 0.0f);
