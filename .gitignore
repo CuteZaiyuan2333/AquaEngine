@@ -1,6 +1,7 @@
 # 构建目录
 Build/
 build/
+build_*/
 out/
 
 # Visual Studio
@@ -67,3 +68,14 @@ packages/
 # 文档生成
 docs/_build/
 site/
+
+# 缓存和索引
+.cache/
+*.idx
+
+# 配置文件
+config.ini
+compile_commands.json
+
+# 结果文件
+*_results.md

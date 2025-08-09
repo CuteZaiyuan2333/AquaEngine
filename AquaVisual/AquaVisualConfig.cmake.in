@@ -1,0 +1,52 @@
+# AquaVisual CMake Configuration File
+# This file helps other projects find and use AquaVisual
+
+@PACKAGE_INIT@
+
+# Version information
+set(AquaVisual_VERSION_MAJOR @AquaVisual_VERSION_MAJOR@)
+set(AquaVisual_VERSION_MINOR @AquaVisual_VERSION_MINOR@)
+set(AquaVisual_VERSION_PATCH @AquaVisual_VERSION_PATCH@)
+set(AquaVisual_VERSION @AquaVisual_VERSION@)
+
+# Check if components are requested
+set(AquaVisual_FIND_COMPONENTS_REQUIRED)
+if(AquaVisual_FIND_REQUIRED)
+    set(AquaVisual_FIND_COMPONENTS_REQUIRED REQUIRED)
+endif()
+
+# Find dependencies
+find_package(Vulkan ${AquaVisual_FIND_COMPONENTS_REQUIRED})
+find_package(glfw3 ${AquaVisual_FIND_COMPONENTS_REQUIRED})
+
+# Include directories
+set_and_check(AquaVisual_INCLUDE_DIRS "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+# Library location
+set_and_check(AquaVisual_LIBRARY_DIRS "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+# Import targets
+include("${CMAKE_CURRENT_LIST_DIR}/AquaVisualTargets.cmake")
+
+# Set library variables
+if(TARGET AquaVisual::AquaVisual)
+    set(AquaVisual_LIBRARIES AquaVisual::AquaVisual)
+    set(AquaVisual_FOUND TRUE)
+else()
+    set(AquaVisual_FOUND FALSE)
+endif()
+
+# Component check
+set(AquaVisual_Core_FOUND TRUE)
+set(AquaVisual_Math_FOUND TRUE)
+set(AquaVisual_Renderer_FOUND TRUE)
+
+# Provide usage information
+if(AquaVisual_FOUND AND NOT AquaVisual_FIND_QUIETLY)
+    message(STATUS "Found AquaVisual: ${AquaVisual_VERSION}")
+    message(STATUS "  Include dirs: ${AquaVisual_INCLUDE_DIRS}")
+    message(STATUS "  Libraries: ${AquaVisual_LIBRARIES}")
+endif()
+
+# Check required components
+check_required_components(AquaVisual)

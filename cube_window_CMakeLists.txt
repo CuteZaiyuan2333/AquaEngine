@@ -1,0 +1,58 @@
+cmake_minimum_required(VERSION 3.16)
+
+# 设置项目名称
+project(CubeWindowDemo)
+
+# 设置C++标准
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 查找Vulkan
+find_package(Vulkan REQUIRED)
+
+# 查找GLFW (如果可用)
+find_package(glfw3 QUIET)
+
+# 添加可执行文件
+add_executable(CubeWindowDemo cube_window_demo.cpp)
+
+# 设置头文件目录
+target_include_directories(CubeWindowDemo PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/AquaVisual/Include
+    ${Vulkan_INCLUDE_DIRS}
+)
+
+# 链接库
+target_link_libraries(CubeWindowDemo PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/AquaVisual/lib/AquaVisual.lib
+    ${Vulkan_LIBRARIES}
+)
+
+# 如果找到GLFW，链接它
+if(glfw3_FOUND)
+    target_link_libraries(CubeWindowDemo PRIVATE glfw)
+    target_compile_definitions(CubeWindowDemo PRIVATE AQUA_HAS_GLFW=1)
+endif()
+
+# 设置编译定义
+target_compile_definitions(CubeWindowDemo PRIVATE
+    AQUA_HAS_VULKAN=1
+    NOMINMAX
+    WIN32_LEAN_AND_MEAN
+)
+
+# 设置运行时库
+if(MSVC)
+    set_property(TARGET CubeWindowDemo PROPERTY
+        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+# 输出信息
+message(STATUS "CubeWindowDemo 配置完成")
+message(STATUS "Vulkan 包含目录: ${Vulkan_INCLUDE_DIRS}")
+message(STATUS "Vulkan 库: ${Vulkan_LIBRARIES}")
+if(glfw3_FOUND)
+    message(STATUS "GLFW 已找到并将被链接")
+else()
+    message(STATUS "GLFW 未找到，将使用存根实现")
+endif()
