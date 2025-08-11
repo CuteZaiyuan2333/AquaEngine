@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="256" height="256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="checkerboard" x="0" y="0" width="32" height="32" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="16" height="16" fill="#FF0000"/>
+      <rect x="16" y="0" width="16" height="16" fill="#00FF00"/>
+      <rect x="0" y="16" width="16" height="16" fill="#00FF00"/>
+      <rect x="16" y="16" width="16" height="16" fill="#0000FF"/>
+    </pattern>
+  </defs>
+  <rect width="256" height="256" fill="url(#checkerboard)"/>
+  <text x="128" y="128" text-anchor="middle" dominant-baseline="middle" 
+        font-family="Arial" font-size="24" fill="white" stroke="black" stroke-width="1">
+    Test Texture
+  </text>
+</svg>

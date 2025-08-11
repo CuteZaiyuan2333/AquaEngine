@@ -1,46 +1,49 @@
 #version 450
 
+layout(push_constant) uniform PushConstants {
+    float time;
+} pc;
+
 layout(location = 0) out vec3 fragColor;
 
-// 立方体的8个顶点
+// Cube vertices in 3D space
 vec3 positions[8] = vec3[](
-    vec3(-0.5, -0.5, -0.5), // 0: 左下后
-    vec3( 0.5, -0.5, -0.5), // 1: 右下后
-    vec3( 0.5,  0.5, -0.5), // 2: 右上后
-    vec3(-0.5,  0.5, -0.5), // 3: 左上后
-    vec3(-0.5, -0.5,  0.5), // 4: 左下前
-    vec3( 0.5, -0.5,  0.5), // 5: 右下前
-    vec3( 0.5,  0.5,  0.5), // 6: 右上前
-    vec3(-0.5,  0.5,  0.5)  // 7: 左上前
+    vec3(-0.5, -0.5, -0.5), // 0
+    vec3( 0.5, -0.5, -0.5), // 1
+    vec3( 0.5,  0.5, -0.5), // 2
+    vec3(-0.5,  0.5, -0.5), // 3
+    vec3(-0.5, -0.5,  0.5), // 4
+    vec3( 0.5, -0.5,  0.5), // 5
+    vec3( 0.5,  0.5,  0.5), // 6
+    vec3(-0.5,  0.5,  0.5)  // 7
 );
 
-// 立方体的36个索引（12个三角形，每个面2个三角形）
+// Cube indices for 12 triangles
 int indices[36] = int[](
-    // 后面 (z = -0.5)
-    0, 1, 2,  2, 3, 0,
-    // 前面 (z = 0.5)
-    4, 5, 6,  6, 7, 4,
-    // 左面 (x = -0.5)
-    0, 3, 7,  7, 4, 0,
-    // 右面 (x = 0.5)
-    1, 2, 6,  6, 5, 1,
-    // 下面 (y = -0.5)
-    0, 1, 5,  5, 4, 0,
-    // 上面 (y = 0.5)
-    3, 2, 6,  6, 7, 3
+    // Front face
+    0, 1, 2, 2, 3, 0,
+    // Back face  
+    4, 6, 5, 6, 4, 7,
+    // Left face
+    4, 0, 3, 3, 7, 4,
+    // Right face
+    1, 5, 6, 6, 2, 1,
+    // Bottom face
+    4, 5, 1, 1, 0, 4,
+    // Top face
+    3, 2, 6, 6, 7, 3
 );
 
-// 6个面的颜色
-vec3 faceColors[6] = vec3[](
-    vec3(1.0, 0.0, 0.0), // 红色 - 后面
-    vec3(0.0, 1.0, 0.0), // 绿色 - 前面
-    vec3(0.0, 0.0, 1.0), // 蓝色 - 左面
-    vec3(1.0, 1.0, 0.0), // 黄色 - 右面
-    vec3(1.0, 0.0, 1.0), // 洋红 - 下面
-    vec3(0.0, 1.0, 1.0)  // 青色 - 上面
+// Face colors
+vec3 colors[6] = vec3[](
+    vec3(1.0, 0.0, 0.0), // Front - Red
+    vec3(0.0, 1.0, 0.0), // Back - Green
+    vec3(0.0, 0.0, 1.0), // Left - Blue
+    vec3(1.0, 1.0, 0.0), // Right - Yellow
+    vec3(1.0, 0.0, 1.0), // Bottom - Magenta
+    vec3(0.0, 1.0, 1.0)  // Top - Cyan
 );
 
-// 创建透视投影矩阵
 mat4 perspective(float fovy, float aspect, float near, float far) {
     float f = 1.0 / tan(fovy / 2.0);
     return mat4(
@@ -51,7 +54,6 @@ mat4 perspective(float fovy, float aspect, float near, float far) {
     );
 }
 
-// 创建旋转矩阵
 mat4 rotateY(float angle) {
     float c = cos(angle);
     float s = sin(angle);
@@ -74,7 +76,6 @@ mat4 rotateX(float angle) {
     );
 }
 
-// 创建平移矩阵
 mat4 translate(vec3 t) {
     return mat4(
         1.0, 0.0, 0.0, 0.0,
@@ -88,27 +89,20 @@ void main() {
     int vertexIndex = indices[gl_VertexIndex];
     vec3 pos = positions[vertexIndex];
     
-    // 使用一个简单的时间模拟来创建旋转动画
-    // 这里使用一个基于顶点索引的简单时间计算
-    float time = float(gl_VertexIndex % 1000) * 0.01;
+    // Apply transformations
+    float time = pc.time;
+    mat4 model = translate(vec3(0.0, 0.0, -3.0)) * 
+                 rotateY(time * 0.8) * 
+                 rotateX(time * 0.3);
     
-    // 创建变换矩阵
-    mat4 model = translate(vec3(0.0, 0.0, -3.0)) * // 向后移动
-                 rotateY(time * 1.0) *              // 绕Y轴旋转
-                 rotateX(time * 0.7);               // 绕X轴旋转
-    
-    // 创建透视投影矩阵
+    // Proper perspective projection
     mat4 proj = perspective(radians(45.0), 800.0/600.0, 0.1, 100.0);
     
-    // 应用变换
+    // Transform vertex
     vec4 worldPos = model * vec4(pos, 1.0);
     gl_Position = proj * worldPos;
     
-    // 根据面来设置颜色，添加一些变化
+    // Set color based on face
     int faceIndex = gl_VertexIndex / 6;
-    vec3 baseColor = faceColors[faceIndex];
-    
-    // 添加一些基于时间的颜色变化
-    float colorMod = sin(time * 3.0) * 0.3 + 0.7;
-    fragColor = baseColor * colorMod;
+    fragColor = colors[faceIndex];
 }

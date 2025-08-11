@@ -31,7 +31,6 @@ set(AQUA_VISUAL_SOURCES
     Source/Core/Renderer.cpp
     Source/Core/VulkanRenderer.cpp
     Source/Core/VulkanRendererImpl.cpp
-    Source/Core/Texture.cpp
     Source/Core/ShaderManager.cpp
     Source/Core/RenderPipeline.cpp
     Source/Core/BufferManager.cpp
@@ -41,9 +40,18 @@ set(AQUA_VISUAL_SOURCES
     Source/Resources/Texture.cpp
     Source/Resources/Primitives.cpp
     
+    # Third Party
+    ../ThirdParty/STB/stb_image_impl.cpp
+    
     # Math
     Source/Math/Vector.cpp
     Source/Math/Matrix.cpp
+    
+    # Lighting
+    Source/Lighting/LightingSystem.cpp
+    
+    # Materials
+    Source/Materials/PBRMaterial.cpp
 )
 
 # 头文件
@@ -63,6 +71,8 @@ set(AQUA_VISUAL_HEADERS
     Include/AquaVisual/Math/Vector.h
     Include/AquaVisual/Resources/Mesh.h
     Include/AquaVisual/Resources/Texture.h
+    Include/AquaVisual/Lighting/LightingSystem.h
+    Include/AquaVisual/Materials/PBRMaterial.h
 )
 
 # 创建静态库
@@ -131,6 +141,13 @@ if(NOT glfw3_FOUND AND NOT GLFW3_FOUND)
         PATHS ${GLFW_SEARCH_PATHS}
         PATH_SUFFIXES lib lib64 lib-vc2022 lib-vc2019 lib-vc2017 lib-vc2015
     )
+    # 确保找到的是 glfw3.lib
+    if(EXISTS "${GLFW_LIBRARY}" AND "${GLFW_LIBRARY}" MATCHES "glfw3\.lib$")
+        message(STATUS "Found glfw3.lib at: ${GLFW_LIBRARY}")
+    else()
+        set(GLFW_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/GLFW/lib-vc2022/glfw3.lib")
+        message(STATUS "Manually setting GLFW_LIBRARY to: ${GLFW_LIBRARY}")
+    endif()
     
     if(GLFW_INCLUDE_DIR AND GLFW_LIBRARY)
         set(GLFW_MANUAL_FOUND TRUE)
@@ -139,7 +156,7 @@ if(NOT glfw3_FOUND AND NOT GLFW3_FOUND)
 endif()
 
 if(glfw3_FOUND)
-    target_link_libraries(AquaVisual PUBLIC glfw)
+    target_link_libraries(AquaVisual PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/GLFW/lib-vc2022/glfw3.lib")
     target_compile_definitions(AquaVisual PRIVATE AQUA_HAS_GLFW)
     message(STATUS "Found GLFW: ${glfw3_DIR}")
 elseif(GLFW3_FOUND)
@@ -148,7 +165,7 @@ elseif(GLFW3_FOUND)
     target_compile_definitions(AquaVisual PRIVATE AQUA_HAS_GLFW)
     message(STATUS "Found GLFW via pkg-config")
 elseif(GLFW_MANUAL_FOUND)
-    target_link_libraries(AquaVisual PUBLIC ${GLFW_LIBRARY})
+    target_link_libraries(AquaVisual PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty/GLFW/lib-vc2022/glfw3.lib")
     target_include_directories(AquaVisual PRIVATE ${GLFW_INCLUDE_DIR})
     target_compile_definitions(AquaVisual PRIVATE AQUA_HAS_GLFW)
     message(STATUS "Found GLFW manually and linked successfully")
@@ -166,13 +183,14 @@ else()
     message(STATUS "GLM not found - using built-in math library")
 endif()
 
-# 示例程序（仅在有依赖时构建）
+# 示例程序
 option(AQUAVISUAL_BUILD_EXAMPLES "Build AquaVisual examples" ON)
 
-if(AQUAVISUAL_BUILD_EXAMPLES AND glfw3_FOUND)
+if(AQUAVISUAL_BUILD_EXAMPLES)
     add_subdirectory(Examples)
+    message(STATUS "Examples enabled")
 else()
-    message(STATUS "Examples disabled - missing dependencies or option disabled")
+    message(STATUS "Examples disabled by option")
 endif()
 
 # 安装配置

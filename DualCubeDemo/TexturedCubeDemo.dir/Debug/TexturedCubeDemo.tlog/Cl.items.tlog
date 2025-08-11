@@ -1,0 +1,17 @@
+G:\Document\AquaEngine\textured_cube_demo.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\textured_cube_demo.obj
+G:\Document\AquaEngine\ThirdParty\STB\stb_image_impl.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\stb_image_impl.obj
+G:\Document\AquaEngine\AquaVisual\Source\AquaVisual.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\AquaVisual.obj
+G:\Document\AquaEngine\AquaVisual\Source\AquaVisualMVP.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\AquaVisualMVP.obj
+G:\Document\AquaEngine\AquaVisual\Source\Resources\Texture.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Texture.obj
+G:\Document\AquaEngine\AquaVisual\Source\Resources\Mesh.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Mesh.obj
+G:\Document\AquaEngine\AquaVisual\Source\Resources\Primitives.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Primitives.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\VulkanRenderer.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\VulkanRenderer.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\VulkanRendererImpl.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\VulkanRendererImpl.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\BufferManager.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\BufferManager.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\ShaderManager.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\ShaderManager.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\RenderPipeline.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\RenderPipeline.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\Renderer.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Renderer.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\Camera.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Camera.obj
+G:\Document\AquaEngine\AquaVisual\Source\Core\Window.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Window.obj
+G:\Document\AquaEngine\AquaVisual\Source\Math\Matrix.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Matrix.obj
+G:\Document\AquaEngine\AquaVisual\Source\Math\Vector.cpp;G:\Document\AquaEngine\TexturedCubeDemo\TexturedCubeDemo.dir\Debug\Vector.obj

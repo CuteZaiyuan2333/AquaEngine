@@ -11,6 +11,14 @@ class Camera;
 class Mesh;
 class Texture;
 
+enum class FrameRateMode {
+  UNLIMITED,
+  FPS_24,
+  FPS_30,
+  FPS_60,
+  FPS_120
+};
+
 struct RendererConfig {
   uint32_t width = 800;
   uint32_t height = 600;
@@ -36,6 +44,7 @@ public:
   virtual bool ShouldClose() const = 0;
   virtual void PollEvents() = 0;
   virtual void GetWindowSize(uint32_t &width, uint32_t &height) const = 0;
+  virtual void SetFrameRateLimit(FrameRateMode mode) = 0;
 
 protected:
   Renderer() = default;

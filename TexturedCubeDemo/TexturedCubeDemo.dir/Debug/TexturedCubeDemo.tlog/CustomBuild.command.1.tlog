@@ -1,0 +1,10 @@
+^G:\DOCUMENT\AQUAENGINE\TEXTUREDCUBEDEMO\CMAKELISTS.TXT
+setlocal
+D:\WinApplication\cmake-3.28.1-windows-x86_64\bin\cmake.exe -SG:/Document/AquaEngine/TexturedCubeDemo -BG:/Document/AquaEngine/TexturedCubeDemo --check-stamp-file G:/Document/AquaEngine/TexturedCubeDemo/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -30,9 +30,9 @@ int main() {
     std::cout << "\n=== Math Library Test ===" << std::endl;
     
     // Vector operations
-    Vec3 vec1(1.0f, 2.0f, 3.0f);
-    Vec3 vec2(4.0f, 5.0f, 6.0f);
-    Vec3 result = vec1 + vec2;
+    Vector3 vec1(1.0f, 2.0f, 3.0f);
+    Vector3 vec2(4.0f, 5.0f, 6.0f);
+    Vector3 result = vec1 + vec2;
     
     std::cout << "Vector addition: (" << vec1.x << ", " << vec1.y << ", " << vec1.z << ") + ("
               << vec2.x << ", " << vec2.y << ", " << vec2.z << ") = ("
@@ -41,7 +41,7 @@ int main() {
     float dot = vec1.Dot(vec2);
     std::cout << "Dot product: " << dot << std::endl;
     
-    Vec3 cross = vec1.Cross(vec2);
+    Vector3 cross = vec1.Cross(vec2);
     std::cout << "Cross product: (" << cross.x << ", " << cross.y << ", " << cross.z << ")" << std::endl;
     
     // Matrix operations

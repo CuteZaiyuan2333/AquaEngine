@@ -10,6 +10,9 @@ struct GLFWwindow;
 #else
 // Define a placeholder type when GLFW is not available
 struct GLFWwindow {};
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #endif
 
 namespace AquaVisual {
@@ -124,12 +127,27 @@ public:
      */
     bool CreateVulkanSurface(void* instance, void** surface);
 
+    /**
+     * @brief Check if a key is currently pressed
+     * @param key Key code (GLFW key codes)
+     * @return Whether the key is pressed
+     */
+    bool IsKeyPressed(int key) const;
+
 private:
     GLFWwindow* m_window;
     uint32_t m_width;
     uint32_t m_height;
     std::string m_title;
     WindowEvents m_events;
+
+#ifndef AQUA_HAS_GLFW
+#ifdef _WIN32
+    HWND m_hwnd;
+    bool m_shouldClose;
+    static LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+#endif
+#endif
 
 #ifdef AQUA_HAS_GLFW
     // GLFW callback functions

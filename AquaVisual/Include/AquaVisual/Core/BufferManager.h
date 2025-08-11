@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AquaVisual/Core/Common.h"
+#include "Common.h"
 #include <memory>
 #include <vector>
 #include <string>

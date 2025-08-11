@@ -28,6 +28,7 @@ bool ShaderModule::LoadFromFile(const std::string& filepath, ShaderType type) {
     std::stringstream buffer;
     buffer << file.rdbuf();
     m_source = buffer.str();
+    m_filepath = filepath;
     m_type = type;
 
     std::cout << "Loaded shader from file: " << filepath << std::endl;
@@ -41,13 +42,45 @@ bool ShaderModule::LoadFromSource(const std::string& source, ShaderType type) {
 }
 
 bool ShaderModule::CompileToSpirv() {
-    // This is a simplified implementation, actual project needs to use shaderc library
-    // Now we assume we have pre-compiled SPIRV or use placeholder
+    // Try to load pre-compiled SPIRV file first
+    std::string spirvPath = m_filepath;
+    if (!spirvPath.empty()) {
+        // Replace extension with .spv
+        size_t lastDot = spirvPath.find_last_of('.');
+        if (lastDot != std::string::npos) {
+            spirvPath = spirvPath.substr(0, lastDot) + ".spv";
+        } else {
+            spirvPath += ".spv";
+        }
+        
+        // Try to load SPIRV file
+        std::ifstream file(spirvPath, std::ios::binary);
+        if (file.is_open()) {
+            file.seekg(0, std::ios::end);
+            size_t fileSize = file.tellg();
+            file.seekg(0, std::ios::beg);
+            
+            if (fileSize % 4 == 0) { // SPIRV must be 4-byte aligned
+                m_spirvCode.resize(fileSize / 4);
+                file.read(reinterpret_cast<char*>(m_spirvCode.data()), fileSize);
+                
+                // Verify SPIRV magic number
+                if (!m_spirvCode.empty() && m_spirvCode[0] == 0x07230203) {
+                    std::cout << "Loaded pre-compiled SPIRV from: " << spirvPath << std::endl;
+                    return true;
+                }
+            }
+        }
+    }
     
-    std::cout << "Compiling shader to SPIRV (placeholder implementation)" << std::endl;
+    // Fallback: Try to compile GLSL to SPIRV using internal method
+    if (!m_source.empty()) {
+        // For now, skip GLSL compilation and use placeholder
+        std::cout << "GLSL compilation not available, using placeholder" << std::endl;
+    }
     
-    // Placeholder: generate some fake SPIRV data
-    // In actual implementation, this should call shaderc compiler
+    // Last resort: generate minimal valid SPIRV for testing
+    std::cout << "Using placeholder SPIRV (for testing only)" << std::endl;
     m_spirvCode = {
         0x07230203, // SPIRV magic number
         0x00010000, // version

@@ -1,6 +1,5 @@
 #include <AquaVisual/AquaVisual.h>
 #include <AquaVisual/Core/VulkanRendererImpl.h>
-#include <AquaVisual/Core/Renderer.h>
 #include <AquaVisual/Math/Vector.h>
 #include <AquaVisual/Primitives.h>
 #include <iostream>
@@ -43,8 +42,13 @@ public:
     
     void Run() {
         std::cout << "Starting render loop..." << std::endl;
-        
         m_running = true;
+        
+        // Test frame rate limiting
+        std::cout << "Setting frame rate limit to 60 FPS..." << std::endl;
+        m_renderer->SetFrameRateLimit(AquaVisual::FrameRateMode::FPS_60);
+        std::cout << "Frame rate limit set successfully!" << std::endl;
+        
         auto startTime = std::chrono::high_resolution_clock::now();
         uint32_t frameCount = 0;
         
@@ -52,18 +56,31 @@ public:
             m_renderer->PollEvents();
             
             if (m_renderer->BeginFrame()) {
+                std::cout << "Clearing screen with color (0.1, 0.1, 0.3, 1)" << std::endl;
                 m_renderer->Clear(0.1f, 0.1f, 0.3f, 1.0f);
+                std::cout << "Submitting render commands" << std::endl;
                 m_renderer->EndFrame();
+                
+                // Wait for frame rate limiting
+                m_renderer->WaitForFrameRate();
             }
             
             frameCount++;
             
+            // Output FPS every 10 frames for debugging
+            if (frameCount % 10 == 0) {
+                auto currentTime = std::chrono::high_resolution_clock::now();
+                float elapsedTime = std::chrono::duration<float>(currentTime - startTime).count();
+                float fps = frameCount / elapsedTime;
+                std::cout << "Frame " << frameCount << " - Current FPS: " << fps << " (Elapsed: " << elapsedTime << "s)" << std::endl;
+            }
+            
+            // Exit after 10 seconds
             auto currentTime = std::chrono::high_resolution_clock::now();
-            auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
-            if (elapsed >= 1) {
-                std::cout << "FPS: " << frameCount << std::endl;
-                frameCount = 0;
-                startTime = currentTime;
+            float elapsedTime = std::chrono::duration<float>(currentTime - startTime).count();
+            if (elapsedTime > 10.0f) {
+                std::cout << "Test completed after 10 seconds" << std::endl;
+                break;
             }
         }
         

@@ -5,12 +5,25 @@
 #ifdef AQUA_HAS_GLFW
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#else
+#ifdef _WIN32
+#include <windows.h>
+#include <windowsx.h>
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_win32.h>
+#endif
 #endif
 
 namespace AquaVisual {
 
 Window::Window(uint32_t width, uint32_t height, const std::string& title)
     : m_window(nullptr), m_width(width), m_height(height), m_title(title) {
+#ifndef AQUA_HAS_GLFW
+#ifdef _WIN32
+    m_hwnd = nullptr;
+    m_shouldClose = false;
+#endif
+#endif
 }
 
 Window::~Window() {
@@ -45,9 +58,53 @@ bool Window::Initialize() {
     std::cout << "Window initialized: " << m_width << "x" << m_height << " - " << m_title << std::endl;
     return true;
 #else
+#ifdef _WIN32
+    // Windows API implementation
+    const char CLASS_NAME[] = "AquaVisualWindow";
+    
+    WNDCLASSA wc = {};
+    wc.lpfnWndProc = WindowProc;
+    wc.hInstance = GetModuleHandle(nullptr);
+    wc.lpszClassName = CLASS_NAME;
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+
+    if (!RegisterClassA(&wc)) {
+        DWORD error = GetLastError();
+        if (error != ERROR_CLASS_ALREADY_EXISTS) {
+            std::cerr << "Failed to register window class, error: " << error << std::endl;
+            return false;
+        }
+    }
+
+    m_hwnd = CreateWindowExA(
+        0,                              // Optional window styles
+        CLASS_NAME,                     // Window class
+        m_title.c_str(),               // Window text
+        WS_OVERLAPPEDWINDOW,            // Window style
+        CW_USEDEFAULT, CW_USEDEFAULT,   // Position
+        m_width, m_height,              // Size
+        nullptr,                        // Parent window
+        nullptr,                        // Menu
+        GetModuleHandle(nullptr),       // Instance handle
+        this                           // Additional application data
+    );
+
+    if (m_hwnd == nullptr) {
+        std::cerr << "Failed to create window" << std::endl;
+        return false;
+    }
+
+    ShowWindow(m_hwnd, SW_SHOW);
+    UpdateWindow(m_hwnd);
+
+    std::cout << "Windows API window initialized: " << m_width << "x" << m_height << " - " << m_title << std::endl;
+    return true;
+#else
     std::cout << "Window stub initialized: " << m_width << "x" << m_height << " - " << m_title << std::endl;
     std::cout << "Note: GLFW not available, using stub implementation" << std::endl;
     return true;
+#endif
 #endif
 }
 
@@ -59,7 +116,15 @@ void Window::Shutdown() {
     }
     glfwTerminate();
 #else
+#ifdef _WIN32
+    if (m_hwnd) {
+        DestroyWindow(m_hwnd);
+        m_hwnd = nullptr;
+    }
+    std::cout << "Windows API window shutdown" << std::endl;
+#else
     std::cout << "Window stub shutdown" << std::endl;
+#endif
 #endif
 }
 
@@ -67,13 +132,25 @@ bool Window::ShouldClose() const {
 #ifdef AQUA_HAS_GLFW
     return m_window ? glfwWindowShouldClose(m_window) : true;
 #else
+#ifdef _WIN32
+    return m_shouldClose;
+#else
     return false;
+#endif
 #endif
 }
 
 void Window::PollEvents() {
 #ifdef AQUA_HAS_GLFW
     glfwPollEvents();
+#else
+#ifdef _WIN32
+    MSG msg;
+    while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+    }
+#endif
 #endif
 }
 
@@ -136,7 +213,16 @@ std::vector<const char*> Window::GetRequiredVulkanExtensions() {
     std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
     return extensions;
 #else
+#ifdef _WIN32
+    // Windows API需要的Vulkan扩展
+    std::vector<const char*> extensions = {
+        VK_KHR_SURFACE_EXTENSION_NAME,
+        VK_KHR_WIN32_SURFACE_EXTENSION_NAME
+    };
+    return extensions;
+#else
     return {};
+#endif
 #endif
 }
 
@@ -160,8 +246,33 @@ bool Window::CreateVulkanSurface(void* instance, void** surface) {
     std::cout << "Vulkan surface created successfully via GLFW" << std::endl;
     return true;
 #else
-    std::cerr << "GLFW not available, cannot create Vulkan surface" << std::endl;
+#ifdef _WIN32
+    if (!m_hwnd || !instance || !surface) {
+        std::cerr << "Invalid parameters for CreateVulkanSurface (Windows API)" << std::endl;
+        return false;
+    }
+    
+    VkInstance vkInstance = static_cast<VkInstance>(instance);
+    VkSurfaceKHR vkSurface;
+    
+    VkWin32SurfaceCreateInfoKHR createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    createInfo.hwnd = m_hwnd;
+    createInfo.hinstance = GetModuleHandle(nullptr);
+    
+    VkResult result = vkCreateWin32SurfaceKHR(vkInstance, &createInfo, nullptr, &vkSurface);
+    if (result != VK_SUCCESS) {
+        std::cerr << "Failed to create Win32 surface, VkResult: " << result << std::endl;
+        return false;
+    }
+    
+    *surface = static_cast<void*>(vkSurface);
+    std::cout << "Vulkan surface created successfully via Windows API" << std::endl;
+    return true;
+#else
+    std::cerr << "No window system available, cannot create Vulkan surface" << std::endl;
     return false;
+#endif
 #endif
 }
 
@@ -208,5 +319,119 @@ void Window::WindowCloseCallback(GLFWwindow* window) {
     }
 }
 #endif
+
+#ifndef AQUA_HAS_GLFW
+#ifdef _WIN32
+// Windows API window procedure
+LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    Window* window = nullptr;
+    
+    if (uMsg == WM_NCCREATE) {
+        CREATESTRUCT* pCreate = reinterpret_cast<CREATESTRUCT*>(lParam);
+        window = reinterpret_cast<Window*>(pCreate->lpCreateParams);
+        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+    } else {
+        window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+    }
+
+    if (window) {
+        switch (uMsg) {
+        case WM_DESTROY:
+            window->m_shouldClose = true;
+            PostQuitMessage(0);
+            return 0;
+        case WM_CLOSE:
+            window->m_shouldClose = true;
+            if (window->m_events.onClose) {
+                window->m_events.onClose();
+            }
+            return 0;
+        case WM_SIZE:
+            {
+                UINT width = LOWORD(lParam);
+                UINT height = HIWORD(lParam);
+                window->m_width = width;
+                window->m_height = height;
+                if (window->m_events.onResize) {
+                    window->m_events.onResize(width, height);
+                }
+            }
+            return 0;
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+            if (window->m_events.onKey) {
+                int action = (uMsg == WM_KEYDOWN) ? 1 : 0; // 1 for press, 0 for release
+                window->m_events.onKey(static_cast<int>(wParam), 0, action, 0);
+            }
+            return 0;
+        case WM_LBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_RBUTTONUP:
+        case WM_MBUTTONUP:
+            if (window->m_events.onMouseButton) {
+                int button = 0;
+                if (uMsg == WM_LBUTTONDOWN || uMsg == WM_LBUTTONUP) button = 0;
+                else if (uMsg == WM_RBUTTONDOWN || uMsg == WM_RBUTTONUP) button = 1;
+                else if (uMsg == WM_MBUTTONDOWN || uMsg == WM_MBUTTONUP) button = 2;
+                
+                int action = (uMsg == WM_LBUTTONDOWN || uMsg == WM_RBUTTONDOWN || uMsg == WM_MBUTTONDOWN) ? 1 : 0;
+                window->m_events.onMouseButton(button, action, 0);
+            }
+            return 0;
+        case WM_MOUSEMOVE:
+            if (window->m_events.onMouseMove) {
+                int xPos = GET_X_LPARAM(lParam);
+                int yPos = GET_Y_LPARAM(lParam);
+                window->m_events.onMouseMove(static_cast<double>(xPos), static_cast<double>(yPos));
+            }
+            return 0;
+        case WM_MOUSEWHEEL:
+            if (window->m_events.onScroll) {
+                int delta = GET_WHEEL_DELTA_WPARAM(wParam);
+                window->m_events.onScroll(0.0, static_cast<double>(delta) / WHEEL_DELTA);
+            }
+            return 0;
+        case WM_PAINT:
+            {
+                PAINTSTRUCT ps;
+                HDC hdc = BeginPaint(hwnd, &ps);
+                FillRect(hdc, &ps.rcPaint, (HBRUSH)(COLOR_WINDOW + 1));
+                EndPaint(hwnd, &ps);
+            }
+            return 0;
+        }
+    }
+    
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+#endif
+#endif
+
+bool Window::IsKeyPressed(int key) const {
+#ifdef AQUA_HAS_GLFW
+    if (!m_window) {
+        return false;
+    }
+    return glfwGetKey(m_window, key) == GLFW_PRESS;
+#else
+#ifdef _WIN32
+    // Windows API key state check
+    // Convert GLFW key codes to Windows virtual key codes
+    int vkCode = key;
+    if (key >= 65 && key <= 90) { // A-Z
+        vkCode = key;
+    } else if (key >= 48 && key <= 57) { // 0-9
+        vkCode = key;
+    }
+    // Add more key mappings as needed
+    
+    return (GetAsyncKeyState(vkCode) & 0x8000) != 0;
+#else
+    return false;
+#endif
+#endif
+}
 
 } // namespace AquaVisual
