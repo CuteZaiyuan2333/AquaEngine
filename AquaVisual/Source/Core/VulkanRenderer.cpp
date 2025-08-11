@@ -1,5 +1,9 @@
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include "../../Include/AquaVisual/Core/VulkanRenderer.h"
 #include "../../Include/AquaVisual/Core/BufferManager.h"
 #include "../../Include/AquaVisual/Core/Camera.h"
@@ -35,8 +39,7 @@ VulkanRenderer::VulkanRenderer()
   m_swapChainExtent = {0, 0};
   m_commandPool = nullptr;
 
-  // 初始化帧率控制
-  SetFrameRateLimit(FrameRateMode::FPS_60);
+  // 初始化帧率控�?  SetFrameRateLimit(FrameRateMode::FPS_60);
   m_lastFrameTime = std::chrono::high_resolution_clock::now();
 }
 
@@ -47,35 +50,35 @@ void VulkanRenderer::SetConfig(const RendererConfig &config) {
 }
 
 bool VulkanRenderer::Initialize() {
-  std::cout << "VulkanRenderer::Initialize() called" << std::endl;
-  std::cout << "Configuration:" << std::endl;
+  std::cout << "VulkanRenderer::Initialize() called\n";
+  std::cout << "Configuration:\n";
   std::cout << "  Size: " << m_config.width << "x" << m_config.height
-            << std::endl;
-  std::cout << "  Title: " << m_config.title << std::endl;
+            << '\n';
+  std::cout << "  Title: " << m_config.title << '\n';
   std::cout << "  Validation: "
             << (m_config.enableValidation ? "enabled" : "disabled")
-            << std::endl;
+            << '\n';
   std::cout << "  VSync: " << (m_config.enableVSync ? "enabled" : "disabled")
-            << std::endl;
+            << '\n';
 
   try {
     // 1. Create window
     if (!CreateVulkanWindow()) {
-      std::cerr << "Failed to create window" << std::endl;
+      std::cerr << "Failed to create window\n";
       return false;
     }
 
     // 2. Initialize Vulkan
     if (!InitializeVulkan()) {
-      std::cerr << "Failed to initialize Vulkan" << std::endl;
+      std::cerr << "Failed to initialize Vulkan\n";
       return false;
     }
 
-    std::cout << "VulkanRenderer initialized successfully!" << std::endl;
+    std::cout << "VulkanRenderer initialized successfully!\n";
     return true;
   } catch (const std::exception &e) {
     std::cerr << "VulkanRenderer initialization failed: " << e.what()
-              << std::endl;
+              << '\n';
     return false;
   }
 }
@@ -137,13 +140,13 @@ void VulkanRenderer::CleanupSwapChain() {
 }
 
 bool VulkanRenderer::CreateVulkanWindow() {
-  std::cout << "Creating window..." << std::endl;
+  std::cout << "Creating window...\n";
 
   m_window =
       std::make_unique<Window>(m_config.width, m_config.height, m_config.title);
 
   if (!m_window->Initialize()) {
-    std::cerr << "Failed to initialize window" << std::endl;
+    std::cerr << "Failed to initialize window\n";
     return false;
   }
 
@@ -154,12 +157,12 @@ bool VulkanRenderer::CreateVulkanWindow() {
   };
   m_window->SetEventCallbacks(events);
 
-  std::cout << "Window created successfully" << std::endl;
+  std::cout << "Window created successfully\n";
   return true;
 }
 
 bool VulkanRenderer::InitializeVulkan() {
-  std::cout << "Initializing Vulkan..." << std::endl;
+  std::cout << "Initializing Vulkan...\n";
 
   // 1. Create Vulkan instance
   if (!CreateInstance()) {
@@ -259,12 +262,12 @@ bool VulkanRenderer::InitializeVulkan() {
     return false;
   }
 
-  std::cout << "Complete Vulkan initialization finished" << std::endl;
+  std::cout << "Complete Vulkan initialization finished\n";
   return true;
 }
 
 bool VulkanRenderer::CreateInstance() {
-  std::cout << "Creating Vulkan instance..." << std::endl;
+  std::cout << "Creating Vulkan instance...\n";
 
   VkApplicationInfo appInfo{};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -299,20 +302,20 @@ bool VulkanRenderer::CreateInstance() {
   VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
   if (result != VK_SUCCESS) {
     std::cerr << "Failed to create Vulkan instance! Error code: " << result
-              << std::endl;
+              << '\n';
     return false;
   }
 
   m_instance = static_cast<void *>(instance);
-  std::cout << "Vulkan instance created successfully" << std::endl;
+  std::cout << "Vulkan instance created successfully\n";
   return true;
 }
 
 bool VulkanRenderer::CreateSurface() {
-  std::cout << "Creating Vulkan surface..." << std::endl;
+  std::cout << "Creating Vulkan surface...\n";
 
   if (!m_window) {
-    std::cerr << "Window not created" << std::endl;
+    std::cerr << "Window not created\n";
     return false;
   }
 
@@ -320,18 +323,18 @@ bool VulkanRenderer::CreateSurface() {
   void *surface = nullptr;
 
   if (!m_window->CreateVulkanSurface(instance, &surface)) {
-    std::cerr << "Failed to create window surface" << std::endl;
+    std::cerr << "Failed to create window surface\n";
     return false;
   }
 
   m_surface = surface;
   std::cout << "Vulkan surface created successfully, surface pointer: "
-            << m_surface << std::endl;
+            << m_surface << '\n';
   return true;
 }
 
 bool VulkanRenderer::PickPhysicalDevice() {
-  std::cout << "Picking physical device..." << std::endl;
+  std::cout << "Picking physical device...\n";
 
   VkInstance instance = static_cast<VkInstance>(m_instance);
 
@@ -339,7 +342,7 @@ bool VulkanRenderer::PickPhysicalDevice() {
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 
   if (deviceCount == 0) {
-    std::cerr << "Failed to find GPUs with Vulkan support" << std::endl;
+    std::cerr << "Failed to find GPUs with Vulkan support\n";
     return false;
   }
 
@@ -355,16 +358,16 @@ bool VulkanRenderer::PickPhysicalDevice() {
   }
 
   if (m_physicalDevice == nullptr) {
-    std::cerr << "Failed to find a suitable GPU" << std::endl;
+    std::cerr << "Failed to find a suitable GPU\n";
     return false;
   }
 
-  std::cout << "Physical device picked successfully" << std::endl;
+  std::cout << "Physical device picked successfully\n";
   return true;
 }
 
 bool VulkanRenderer::CreateLogicalDevice() {
-  std::cout << "Creating logical device..." << std::endl;
+  std::cout << "Creating logical device...\n";
 
   VkPhysicalDevice physicalDevice =
       static_cast<VkPhysicalDevice>(m_physicalDevice);
@@ -387,7 +390,7 @@ bool VulkanRenderer::CreateLogicalDevice() {
   }
 
   if (graphicsFamily == UINT32_MAX) {
-    std::cerr << "Failed to find graphics queue family" << std::endl;
+    std::cerr << "Failed to find graphics queue family\n";
     return false;
   }
 
@@ -416,7 +419,7 @@ bool VulkanRenderer::CreateLogicalDevice() {
   VkDevice device;
   if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to create logical device" << std::endl;
+    std::cerr << "Failed to create logical device\n";
     return false;
   }
 
@@ -432,12 +435,12 @@ bool VulkanRenderer::CreateLogicalDevice() {
   // Initialize BufferManager with Vulkan device
   BufferManager::Instance().SetVulkanDevice(device, physicalDevice);
 
-  std::cout << "Logical device created successfully" << std::endl;
+  std::cout << "Logical device created successfully\n";
   return true;
 }
 
 bool VulkanRenderer::CreateSwapChain() {
-  std::cout << "Creating swap chain..." << std::endl;
+  std::cout << "Creating swap chain...\n";
 
   VkPhysicalDevice physicalDevice =
       static_cast<VkPhysicalDevice>(m_physicalDevice);
@@ -521,7 +524,7 @@ bool VulkanRenderer::CreateSwapChain() {
   VkSwapchainKHR swapChain;
   if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to create swap chain" << std::endl;
+    std::cerr << "Failed to create swap chain\n";
     return false;
   }
 
@@ -540,12 +543,12 @@ bool VulkanRenderer::CreateSwapChain() {
     m_swapChainImages[i] = static_cast<void *>(swapChainImages[i]);
   }
 
-  std::cout << "Swap chain created successfully" << std::endl;
+  std::cout << "Swap chain created successfully\n";
   return true;
 }
 
 bool VulkanRenderer::CreateImageViews() {
-  std::cout << "Creating image views..." << std::endl;
+  std::cout << "Creating image views...\n";
 
   VkDevice device = static_cast<VkDevice>(m_device);
 
@@ -570,7 +573,7 @@ bool VulkanRenderer::CreateImageViews() {
     VkImageView imageView;
     if (vkCreateImageView(device, &createInfo, nullptr, &imageView) !=
         VK_SUCCESS) {
-      std::cerr << "Failed to create image view " << i << std::endl;
+      std::cerr << "Failed to create image view " << i << '\n';
       return false;
     }
 
@@ -578,12 +581,12 @@ bool VulkanRenderer::CreateImageViews() {
   }
 
   std::cout << "Image views created successfully ("
-            << m_swapChainImageViews.size() << " views)" << std::endl;
+            << m_swapChainImageViews.size() << " views)\n";
   return true;
 }
 
 bool VulkanRenderer::CreateRenderPass() {
-  std::cout << "Creating render pass..." << std::endl;
+  std::cout << "Creating render pass...\n";
 
   VkDevice device = static_cast<VkDevice>(m_device);
 
@@ -649,19 +652,18 @@ bool VulkanRenderer::CreateRenderPass() {
   VkRenderPass renderPass;
   if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to create render pass" << std::endl;
+    std::cerr << "Failed to create render pass\n";
     return false;
   }
 
   m_renderPass = static_cast<void *>(renderPass);
 
-  std::cout << "Render pass created successfully with depth buffer support"
-            << std::endl;
+  std::cout << "Render pass created successfully with depth buffer support\n";
   return true;
 }
 
 bool VulkanRenderer::CreateGraphicsPipeline() {
-  std::cout << "Creating graphics pipeline..." << std::endl;
+  std::cout << "Creating graphics pipeline...\n";
 
   VkDevice device = static_cast<VkDevice>(m_device);
 
@@ -672,7 +674,7 @@ bool VulkanRenderer::CreateGraphicsPipeline() {
       ReadFile("AquaVisual/Shaders/dual_cube_textured_frag.spv");
 
   if (vertShaderCode.empty() || fragShaderCode.empty()) {
-    std::cerr << "Failed to load shader files" << std::endl;
+    std::cerr << "Failed to load shader files\n";
     return false;
   }
 
@@ -681,7 +683,7 @@ bool VulkanRenderer::CreateGraphicsPipeline() {
 
   if (vertShaderModule == VK_NULL_HANDLE ||
       fragShaderModule == VK_NULL_HANDLE) {
-    std::cerr << "Failed to create shader modules" << std::endl;
+    std::cerr << "Failed to create shader modules\n";
     if (vertShaderModule != VK_NULL_HANDLE) {
       vkDestroyShaderModule(device, vertShaderModule, nullptr);
     }
@@ -839,7 +841,7 @@ bool VulkanRenderer::CreateGraphicsPipeline() {
   VkPipelineLayout pipelineLayout;
   if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr,
                              &pipelineLayout) != VK_SUCCESS) {
-    std::cerr << "Failed to create pipeline layout" << std::endl;
+    std::cerr << "Failed to create pipeline layout" << '\n';
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
     return false;
@@ -867,7 +869,7 @@ bool VulkanRenderer::CreateGraphicsPipeline() {
   VkPipeline graphicsPipeline;
   if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo,
                                 nullptr, &graphicsPipeline) != VK_SUCCESS) {
-    std::cerr << "Failed to create graphics pipeline" << std::endl;
+    std::cerr << "Failed to create graphics pipeline" << '\n';
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyShaderModule(device, fragShaderModule, nullptr);
     vkDestroyShaderModule(device, vertShaderModule, nullptr);
@@ -880,27 +882,27 @@ bool VulkanRenderer::CreateGraphicsPipeline() {
   vkDestroyShaderModule(device, fragShaderModule, nullptr);
   vkDestroyShaderModule(device, vertShaderModule, nullptr);
 
-  std::cout << "Graphics pipeline created successfully" << std::endl;
+  std::cout << "Graphics pipeline created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateFramebuffers() {
-  std::cout << "Creating framebuffers..." << std::endl;
+  std::cout << "Creating framebuffers..." << '\n';
   std::cout << "Swap chain image views count: " << m_swapChainImageViews.size()
-            << std::endl;
+            << '\n';
   std::cout << "Swap chain extent: " << m_swapChainExtent.width << "x"
-            << m_swapChainExtent.height << std::endl;
+            << m_swapChainExtent.height << '\n';
 
   if (m_swapChainImageViews.empty()) {
     std::cerr << "ERROR: No swap chain image views available for framebuffer "
                  "creation!"
-              << std::endl;
+              << '\n';
     return false;
   }
 
   if (m_swapChainExtent.width == 0 || m_swapChainExtent.height == 0) {
     std::cerr << "ERROR: Invalid swap chain extent for framebuffer creation!"
-              << std::endl;
+              << '\n';
     return false;
   }
 
@@ -923,19 +925,19 @@ bool VulkanRenderer::CreateFramebuffers() {
     VkFramebuffer framebuffer;
     if (vkCreateFramebuffer(static_cast<VkDevice>(m_device), &framebufferInfo,
                             nullptr, &framebuffer) != VK_SUCCESS) {
-      std::cerr << "Failed to create framebuffer" << std::endl;
+      std::cerr << "Failed to create framebuffer" << '\n';
       return false;
     }
 
     m_swapChainFramebuffers[i] = static_cast<void *>(framebuffer);
   }
 
-  std::cout << "Framebuffers created successfully" << std::endl;
+  std::cout << "Framebuffers created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateCommandPool() {
-  std::cout << "Creating command pool..." << std::endl;
+  std::cout << "Creating command pool..." << '\n';
 
   // Find graphics queue family
   uint32_t queueFamilyCount = 0;
@@ -957,7 +959,7 @@ bool VulkanRenderer::CreateCommandPool() {
   }
 
   if (graphicsFamily == UINT32_MAX) {
-    std::cerr << "Failed to find graphics queue family" << std::endl;
+    std::cerr << "Failed to find graphics queue family" << '\n';
     return false;
   }
 
@@ -969,18 +971,18 @@ bool VulkanRenderer::CreateCommandPool() {
   VkCommandPool commandPool;
   if (vkCreateCommandPool(static_cast<VkDevice>(m_device), &poolInfo, nullptr,
                           &commandPool) != VK_SUCCESS) {
-    std::cerr << "Failed to create command pool" << std::endl;
+    std::cerr << "Failed to create command pool" << '\n';
     return false;
   }
 
   m_commandPool = static_cast<void *>(commandPool);
 
-  std::cout << "Command pool created successfully" << std::endl;
+  std::cout << "Command pool created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateCommandBuffers() {
-  std::cout << "Creating command buffers..." << std::endl;
+  std::cout << "Creating command buffers..." << '\n';
 
   m_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -993,7 +995,7 @@ bool VulkanRenderer::CreateCommandBuffers() {
   std::vector<VkCommandBuffer> commandBuffers(MAX_FRAMES_IN_FLIGHT);
   if (vkAllocateCommandBuffers(static_cast<VkDevice>(m_device), &allocInfo,
                                commandBuffers.data()) != VK_SUCCESS) {
-    std::cerr << "Failed to allocate command buffers" << std::endl;
+    std::cerr << "Failed to allocate command buffers" << '\n';
     return false;
   }
 
@@ -1001,7 +1003,7 @@ bool VulkanRenderer::CreateCommandBuffers() {
     m_commandBuffers[i] = static_cast<void *>(commandBuffers[i]);
   }
 
-  std::cout << "Command buffers created successfully" << std::endl;
+  std::cout << "Command buffers created successfully" << '\n';
   return true;
 }
 
@@ -1011,12 +1013,12 @@ bool VulkanRenderer::IsDeviceSuitable(void *device) {
   // Get device properties for debugging
   VkPhysicalDeviceProperties deviceProperties;
   vkGetPhysicalDeviceProperties(physicalDevice, &deviceProperties);
-  std::cout << "Checking device: " << deviceProperties.deviceName << std::endl;
+  std::cout << "Checking device: " << deviceProperties.deviceName << '\n';
 
   // Check queue families
   QueueFamilyIndices indices = FindQueueFamilies(device);
   std::cout << "Queue families complete: "
-            << (indices.IsComplete() ? "Yes" : "No") << std::endl;
+            << (indices.IsComplete() ? "Yes" : "No") << '\n';
   if (!indices.IsComplete()) {
     return false;
   }
@@ -1024,7 +1026,7 @@ bool VulkanRenderer::IsDeviceSuitable(void *device) {
   // Check device extensions support
   bool extensionsSupported = CheckDeviceExtensionSupport(device);
   std::cout << "Extensions supported: " << (extensionsSupported ? "Yes" : "No")
-            << std::endl;
+            << '\n';
   if (!extensionsSupported) {
     return false;
   }
@@ -1034,15 +1036,15 @@ bool VulkanRenderer::IsDeviceSuitable(void *device) {
   bool swapChainAdequate = !swapChainSupport.formats.empty() &&
                            !swapChainSupport.presentModes.empty();
   std::cout << "Swap chain adequate: " << (swapChainAdequate ? "Yes" : "No")
-            << std::endl;
+            << '\n';
   std::cout << "Formats count: " << swapChainSupport.formats.size()
-            << std::endl;
+            << '\n';
   std::cout << "Present modes count: " << swapChainSupport.presentModes.size()
-            << std::endl;
+            << '\n';
 
   bool suitable = swapChainAdequate;
-  std::cout << "Device suitable: " << (suitable ? "Yes" : "No") << std::endl;
-  std::cout << "---" << std::endl;
+  std::cout << "Device suitable: " << (suitable ? "Yes" : "No") << '\n';
+  std::cout << "---" << '\n';
 
   return suitable;
 }
@@ -1076,7 +1078,7 @@ SwapChainSupportDetails VulkanRenderer::QuerySwapChainSupport(void *device) {
 
   if (!m_surface) {
     std::cerr << "Surface is null, cannot query swap chain support"
-              << std::endl;
+              << '\n';
     return details;
   }
 
@@ -1111,7 +1113,7 @@ SwapChainSupportDetails VulkanRenderer::QuerySwapChainSupport(void *device) {
 
   std::cout << "Swap chain support query completed: " << formatCount
             << " formats, " << presentModeCount << " present modes"
-            << std::endl;
+            << '\n';
 
   return details;
 }
@@ -1121,13 +1123,13 @@ QueueFamilyIndices VulkanRenderer::FindQueueFamilies(void *device) {
   QueueFamilyIndices indices;
 
   std::cout << "FindQueueFamilies: surface pointer = " << m_surface
-            << std::endl;
+            << '\n';
 
   uint32_t queueFamilyCount = 0;
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
                                            nullptr);
 
-  std::cout << "Found " << queueFamilyCount << " queue families" << std::endl;
+  std::cout << "Found " << queueFamilyCount << " queue families" << '\n';
 
   std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
   vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueFamilyCount,
@@ -1155,7 +1157,7 @@ QueueFamilyIndices VulkanRenderer::FindQueueFamilies(void *device) {
       std::cout << " (no surface to check present support)";
     }
 
-    std::cout << std::endl;
+    std::cout << '\n';
 
     if (indices.IsComplete()) {
       break;
@@ -1168,18 +1170,18 @@ QueueFamilyIndices VulkanRenderer::FindQueueFamilies(void *device) {
             << (indices.graphicsFamily != UINT32_MAX
                     ? std::to_string(indices.graphicsFamily)
                     : "not found")
-            << std::endl;
+            << '\n';
   std::cout << "Present family: "
             << (indices.presentFamily != UINT32_MAX
                     ? std::to_string(indices.presentFamily)
                     : "not found")
-            << std::endl;
+            << '\n';
 
   return indices;
 }
 
 bool VulkanRenderer::CreateSyncObjects() {
-  std::cout << "Creating synchronization objects..." << std::endl;
+  std::cout << "Creating synchronization objects..." << '\n';
 
   m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
   m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -1203,7 +1205,7 @@ bool VulkanRenderer::CreateSyncObjects() {
         vkCreateFence(static_cast<VkDevice>(m_device), &fenceInfo, nullptr,
                       &inFlightFence) != VK_SUCCESS) {
       std::cerr << "Failed to create synchronization objects for frame " << i
-                << std::endl;
+                << '\n';
       return false;
     }
 
@@ -1214,12 +1216,12 @@ bool VulkanRenderer::CreateSyncObjects() {
     m_inFlightFences[i] = static_cast<void *>(inFlightFence);
   }
 
-  std::cout << "Synchronization objects created successfully" << std::endl;
+  std::cout << "Synchronization objects created successfully" << '\n';
   return true;
 }
 
 void VulkanRenderer::Shutdown() {
-  std::cout << "VulkanRenderer::Shutdown() called" << std::endl;
+  std::cout << "VulkanRenderer::Shutdown() called" << '\n';
 
   // Wait for device to be idle
   if (m_device != nullptr) {
@@ -1362,43 +1364,43 @@ void VulkanRenderer::Shutdown() {
     m_window.reset();
   }
 
-  std::cout << "VulkanRenderer shutdown completed" << std::endl;
+  std::cout << "VulkanRenderer shutdown completed" << '\n';
 }
 
 bool VulkanRenderer::BeginFrame() {
-  std::cout << "BeginFrame: Starting frame " << m_currentFrame << std::endl;
+  std::cout << "BeginFrame: Starting frame " << m_currentFrame << '\n';
 
   VkDevice device = static_cast<VkDevice>(m_device);
   VkFence inFlightFence =
       static_cast<VkFence>(m_inFlightFences[m_currentFrame]);
 
-  std::cout << "BeginFrame: Waiting for fence..." << std::endl;
+  std::cout << "BeginFrame: Waiting for fence..." << '\n';
   // Wait for the previous frame to finish
   vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
-  std::cout << "BeginFrame: Fence signaled" << std::endl;
+  std::cout << "BeginFrame: Fence signaled" << '\n';
 
   // Acquire an image from the swap chain
   VkSemaphore imageAvailableSemaphore =
       static_cast<VkSemaphore>(m_imageAvailableSemaphores[m_currentFrame]);
   VkSwapchainKHR swapChain = static_cast<VkSwapchainKHR>(m_swapChain);
 
-  std::cout << "BeginFrame: Acquiring next image..." << std::endl;
+  std::cout << "BeginFrame: Acquiring next image..." << '\n';
   uint32_t imageIndex;
   VkResult result = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX,
                                           imageAvailableSemaphore,
                                           VK_NULL_HANDLE, &imageIndex);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-    std::cerr << "BeginFrame: Swap chain out of date" << std::endl;
+    std::cerr << "BeginFrame: Swap chain out of date" << '\n';
     // Swap chain needs to be recreated
     return false;
   } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
     std::cerr << "BeginFrame: Failed to acquire swap chain image, result = "
-              << result << std::endl;
+              << result << '\n';
     return false;
   }
 
-  std::cout << "BeginFrame: Acquired image index " << imageIndex << std::endl;
+  std::cout << "BeginFrame: Acquired image index " << imageIndex << '\n';
   m_currentImageIndex = imageIndex;
 
   // Reset the fence only if we are submitting work
@@ -1406,7 +1408,7 @@ bool VulkanRenderer::BeginFrame() {
 
   // Reset command buffer
   std::cout << "BeginFrame: Resetting command buffer for frame "
-            << m_currentFrame << std::endl;
+            << m_currentFrame << '\n';
   VkCommandBuffer commandBuffer =
       static_cast<VkCommandBuffer>(m_commandBuffers[m_currentFrame]);
   vkResetCommandBuffer(commandBuffer, 0);
@@ -1417,39 +1419,39 @@ bool VulkanRenderer::BeginFrame() {
   beginInfo.flags = 0;
   beginInfo.pInheritanceInfo = nullptr;
 
-  std::cout << "BeginFrame: Beginning command buffer recording" << std::endl;
+  std::cout << "BeginFrame: Beginning command buffer recording" << '\n';
   std::cout << "BeginFrame: Command buffer pointer = " << commandBuffer
-            << std::endl;
-  std::cout << "BeginFrame: Current frame = " << m_currentFrame << std::endl;
+            << '\n';
+  std::cout << "BeginFrame: Current frame = " << m_currentFrame << '\n';
 
   VkResult beginResult = vkBeginCommandBuffer(commandBuffer, &beginInfo);
   std::cout << "BeginFrame: vkBeginCommandBuffer result = " << beginResult
-            << std::endl;
+            << '\n';
 
   if (beginResult != VK_SUCCESS) {
     std::cerr
         << "BeginFrame: Failed to begin recording command buffer, error code: "
-        << beginResult << std::endl;
+        << beginResult << '\n';
     return false;
   }
 
   std::cout << "BeginFrame: Command buffer recording started successfully"
-            << std::endl;
+            << '\n';
 
   // Begin render pass
-  std::cout << "BeginFrame: Setting up render pass info" << std::endl;
-  std::cout << "BeginFrame: Image index = " << imageIndex << std::endl;
+  std::cout << "BeginFrame: Setting up render pass info" << '\n';
+  std::cout << "BeginFrame: Image index = " << imageIndex << '\n';
   std::cout << "BeginFrame: Framebuffers size = "
-            << m_swapChainFramebuffers.size() << std::endl;
+            << m_swapChainFramebuffers.size() << '\n';
 
   VkRenderPassBeginInfo renderPassInfo{};
   renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  std::cout << "BeginFrame: Setting render pass" << std::endl;
+  std::cout << "BeginFrame: Setting render pass" << '\n';
   renderPassInfo.renderPass = static_cast<VkRenderPass>(m_renderPass);
-  std::cout << "BeginFrame: Setting framebuffer" << std::endl;
+  std::cout << "BeginFrame: Setting framebuffer" << '\n';
   renderPassInfo.framebuffer =
       static_cast<VkFramebuffer>(m_swapChainFramebuffers[imageIndex]);
-  std::cout << "BeginFrame: Setting render area" << std::endl;
+  std::cout << "BeginFrame: Setting render area" << '\n';
   renderPassInfo.renderArea.offset = {0, 0};
   renderPassInfo.renderArea.extent = {m_swapChainExtent.width,
                                       m_swapChainExtent.height};
@@ -1462,43 +1464,43 @@ bool VulkanRenderer::BeginFrame() {
   renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
   renderPassInfo.pClearValues = clearValues.data();
 
-  std::cout << "BeginFrame: Beginning render pass" << std::endl;
+  std::cout << "BeginFrame: Beginning render pass" << '\n';
   std::cout << "BeginFrame: Render pass = " << renderPassInfo.renderPass
-            << std::endl;
+            << '\n';
   std::cout << "BeginFrame: Framebuffer = " << renderPassInfo.framebuffer
-            << std::endl;
+            << '\n';
   std::cout << "BeginFrame: Render area extent = "
             << renderPassInfo.renderArea.extent.width << "x"
-            << renderPassInfo.renderArea.extent.height << std::endl;
+            << renderPassInfo.renderArea.extent.height << '\n';
 
   vkCmdBeginRenderPass(commandBuffer, &renderPassInfo,
                        VK_SUBPASS_CONTENTS_INLINE);
-  std::cout << "BeginFrame: Render pass started successfully" << std::endl;
+  std::cout << "BeginFrame: Render pass started successfully" << '\n';
 
-  std::cout << "BeginFrame: Frame setup complete" << std::endl;
+  std::cout << "BeginFrame: Frame setup complete" << '\n';
   return true;
 }
 
 void VulkanRenderer::EndFrame() {
   std::cout << "EndFrame: Starting end frame process for frame "
-            << m_currentFrame << std::endl;
+            << m_currentFrame << '\n';
   VkDevice device = static_cast<VkDevice>(m_device);
   VkCommandBuffer commandBuffer =
       static_cast<VkCommandBuffer>(m_commandBuffers[m_currentFrame]);
 
   // End render pass
-  std::cout << "EndFrame: Ending render pass" << std::endl;
+  std::cout << "EndFrame: Ending render pass" << '\n';
   vkCmdEndRenderPass(commandBuffer);
 
   // End command buffer recording
-  std::cout << "EndFrame: Ending command buffer recording" << std::endl;
+  std::cout << "EndFrame: Ending command buffer recording" << '\n';
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    std::cerr << "EndFrame: Failed to record command buffer" << std::endl;
+    std::cerr << "EndFrame: Failed to record command buffer" << '\n';
     return;
   }
 
   // Submit the command buffer
-  std::cout << "EndFrame: Preparing to submit command buffer" << std::endl;
+  std::cout << "EndFrame: Preparing to submit command buffer" << '\n';
   VkSubmitInfo submitInfo{};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -1519,17 +1521,17 @@ void VulkanRenderer::EndFrame() {
   submitInfo.pSignalSemaphores = signalSemaphores;
 
   std::cout << "EndFrame: Submitting command buffer to graphics queue"
-            << std::endl;
+            << '\n';
   VkFence inFlightFence =
       static_cast<VkFence>(m_inFlightFences[m_currentFrame]);
   if (vkQueueSubmit(static_cast<VkQueue>(m_graphicsQueue), 1, &submitInfo,
                     inFlightFence) != VK_SUCCESS) {
-    std::cerr << "EndFrame: Failed to submit draw command buffer" << std::endl;
+    std::cerr << "EndFrame: Failed to submit draw command buffer" << '\n';
     return;
   }
 
   // Present the image
-  std::cout << "EndFrame: Preparing to present image" << std::endl;
+  std::cout << "EndFrame: Preparing to present image" << '\n';
   VkPresentInfoKHR presentInfo{};
   presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   presentInfo.waitSemaphoreCount = 1;
@@ -1542,30 +1544,30 @@ void VulkanRenderer::EndFrame() {
   presentInfo.pResults = nullptr;
 
   std::cout << "EndFrame: Presenting image index " << m_currentImageIndex
-            << std::endl;
+            << '\n';
   VkResult result =
       vkQueuePresentKHR(static_cast<VkQueue>(m_presentQueue), &presentInfo);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-    std::cout << "EndFrame: Swap chain out of date or suboptimal" << std::endl;
+    std::cout << "EndFrame: Swap chain out of date or suboptimal" << '\n';
     // Swap chain needs to be recreated
   } else if (result != VK_SUCCESS) {
     std::cerr << "EndFrame: Failed to present swap chain image, result = "
-              << result << std::endl;
+              << result << '\n';
   } else {
-    std::cout << "EndFrame: Image presented successfully" << std::endl;
+    std::cout << "EndFrame: Image presented successfully" << '\n';
   }
 
   m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
   std::cout << "EndFrame: Frame completed, next frame will be "
-            << m_currentFrame << std::endl;
+            << m_currentFrame << '\n';
 
   // 应用帧率限制
   WaitForFrameRate();
 }
 
 void VulkanRenderer::SetCamera(const Camera &camera) {
-  std::cout << "SetCamera: Updating camera matrices" << std::endl;
+  std::cout << "SetCamera: Updating camera matrices" << '\n';
 
   // Get view and projection matrices from camera
   const Matrix4 &viewMatrix = camera.GetViewMatrix();
@@ -1581,31 +1583,31 @@ void VulkanRenderer::SetCamera(const Camera &camera) {
                 16 * sizeof(float));
 
     // Debug: Print view matrix
-    std::cout << "SetCamera: View Matrix:" << std::endl;
+    std::cout << "SetCamera: View Matrix:" << '\n';
     for (int i = 0; i < 4; i++) {
       std::cout << "  [" << viewData[i * 4] << ", " << viewData[i * 4 + 1]
                 << ", " << viewData[i * 4 + 2] << ", " << viewData[i * 4 + 3]
-                << "]" << std::endl;
+                << "]" << '\n';
     }
 
     // Debug: Print projection matrix
-    std::cout << "SetCamera: Projection Matrix:" << std::endl;
+    std::cout << "SetCamera: Projection Matrix:" << '\n';
     for (int i = 0; i < 4; i++) {
       std::cout << "  [" << projData[i * 4] << ", " << projData[i * 4 + 1]
                 << ", " << projData[i * 4 + 2] << ", " << projData[i * 4 + 3]
-                << "]" << std::endl;
+                << "]" << '\n';
     }
 
-    std::cout << "SetCamera: Camera matrices updated successfully" << std::endl;
+    std::cout << "SetCamera: Camera matrices updated successfully" << '\n';
   } else {
     std::cerr << "SetCamera: Failed to get matrix data from camera"
-              << std::endl;
+              << '\n';
   }
 }
 
 void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
   std::cout << "RenderMesh: Starting mesh rendering for frame "
-            << m_currentFrame << std::endl;
+            << m_currentFrame << '\n';
   VkCommandBuffer commandBuffer =
       static_cast<VkCommandBuffer>(m_commandBuffers[m_currentFrame]);
 
@@ -1613,7 +1615,7 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
   UpdateUniformBuffer(m_currentFrame);
 
   // Bind graphics pipeline
-  std::cout << "RenderMesh: Binding graphics pipeline" << std::endl;
+  std::cout << "RenderMesh: Binding graphics pipeline" << '\n';
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                     static_cast<VkPipeline>(m_graphicsPipeline));
 
@@ -1625,7 +1627,7 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
                           &descriptorSet, 0, nullptr);
 
   // Set viewport
-  std::cout << "RenderMesh: Setting viewport" << std::endl;
+  std::cout << "RenderMesh: Setting viewport" << '\n';
   VkViewport viewport{};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
@@ -1636,7 +1638,7 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
   vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
   // Set scissor
-  std::cout << "RenderMesh: Setting scissor" << std::endl;
+  std::cout << "RenderMesh: Setting scissor" << '\n';
   VkRect2D scissor{};
   scissor.offset = {0, 0};
   scissor.extent = {m_swapChainExtent.width, m_swapChainExtent.height};
@@ -1652,7 +1654,7 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
   // Push time and aspect ratio constants to shader
   float pushConstants[2] = {m_animationTime, aspectRatio};
   std::cout << "RenderMesh: Pushing constants - time: " << m_animationTime
-            << ", aspect: " << aspectRatio << std::endl;
+            << ", aspect: " << aspectRatio << '\n';
   vkCmdPushConstants(
       commandBuffer, static_cast<VkPipelineLayout>(m_pipelineLayout),
       VK_SHADER_STAGE_VERTEX_BIT, 0, 2 * sizeof(float), pushConstants);
@@ -1662,7 +1664,7 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
     // Use actual mesh data for rendering
     std::cout << "RenderMesh: Rendering mesh with " << mesh.GetVertexCount()
               << " vertices and " << mesh.GetIndexCount() << " indices"
-              << std::endl;
+              << '\n';
 
     // Create temporary vertex buffer for this mesh
     auto vertexBuffer = BufferManager::Instance().CreateVertexBuffer(
@@ -1686,47 +1688,47 @@ void VulkanRenderer::RenderMesh(const Mesh &mesh, const Texture *texture) {
                                VK_INDEX_TYPE_UINT32);
           vkCmdDrawIndexed(commandBuffer, mesh.GetIndexCount(), 1, 0, 0, 0);
           std::cout << "RenderMesh: Drew " << mesh.GetIndexCount() << " indices"
-                    << std::endl;
+                    << '\n';
         } else {
           std::cerr << "RenderMesh: Failed to create index buffer, falling "
                        "back to vertex draw"
-                    << std::endl;
+                    << '\n';
           vkCmdDraw(commandBuffer, mesh.GetVertexCount(), 1, 0, 0);
         }
       } else {
         // Draw without indices
         vkCmdDraw(commandBuffer, mesh.GetVertexCount(), 1, 0, 0);
         std::cout << "RenderMesh: Drew " << mesh.GetVertexCount() << " vertices"
-                  << std::endl;
+                  << '\n';
       }
     } else {
       std::cerr << "RenderMesh: Failed to create vertex buffer, using fallback"
-                << std::endl;
+                << '\n';
       // Fallback to hardcoded cube
       vkCmdDraw(commandBuffer, 36, 1, 0, 0);
     }
   } else {
     // Fallback: draw hardcoded cube when no mesh data is available
     std::cout << "RenderMesh: No mesh data available, using hardcoded cube"
-              << std::endl;
+              << '\n';
     vkCmdDraw(commandBuffer, 36, 1, 0, 0);
   }
 
   // Handle texture information
   if (texture) {
     std::cout << "RenderMesh: Texture provided and bound via descriptor set"
-              << std::endl;
+              << '\n';
   } else {
     std::cout << "RenderMesh: Using default texture via descriptor set"
-              << std::endl;
+              << '\n';
   }
 
-  std::cout << "RenderMesh: Mesh rendering completed" << std::endl;
+  std::cout << "RenderMesh: Mesh rendering completed" << '\n';
 }
 
 void VulkanRenderer::Clear(float r, float g, float b, float a) {
   std::cout << "Clearing screen with color (" << r << ", " << g << ", " << b
-            << ", " << a << ")" << std::endl;
+            << ", " << a << ")" << '\n';
   m_clearColor[0] = r;
   m_clearColor[1] = g;
   m_clearColor[2] = b;
@@ -1756,7 +1758,7 @@ std::vector<char> VulkanRenderer::ReadFile(const std::string &filename) {
   std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
   if (!file.is_open()) {
-    std::cerr << "Failed to open file: " << filename << std::endl;
+    std::cerr << "Failed to open file: " << filename << '\n';
     return {};
   }
 
@@ -1780,7 +1782,7 @@ VulkanRenderer::CreateShaderModule(const std::vector<char> &code) {
   VkShaderModule shaderModule;
   if (vkCreateShaderModule(static_cast<VkDevice>(m_device), &createInfo,
                            nullptr, &shaderModule) != VK_SUCCESS) {
-    std::cerr << "Failed to create shader module" << std::endl;
+    std::cerr << "Failed to create shader module" << '\n';
     return VK_NULL_HANDLE;
   }
 
@@ -1788,7 +1790,7 @@ VulkanRenderer::CreateShaderModule(const std::vector<char> &code) {
 }
 
 bool VulkanRenderer::CreateDepthResources() {
-  std::cout << "Creating depth resources..." << std::endl;
+  std::cout << "Creating depth resources..." << '\n';
 
   m_depthFormat = FindDepthFormat();
 
@@ -1797,18 +1799,18 @@ bool VulkanRenderer::CreateDepthResources() {
                    VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_depthImage,
                    m_depthImageMemory)) {
-    std::cerr << "Failed to create depth image" << std::endl;
+    std::cerr << "Failed to create depth image" << '\n';
     return false;
   }
 
   m_depthImageView =
       CreateImageView(m_depthImage, m_depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
   if (m_depthImageView == nullptr) {
-    std::cerr << "Failed to create depth image view" << std::endl;
+    std::cerr << "Failed to create depth image view" << '\n';
     return false;
   }
 
-  std::cout << "Depth resources created successfully" << std::endl;
+  std::cout << "Depth resources created successfully" << '\n';
   return true;
 }
 
@@ -1872,7 +1874,7 @@ bool VulkanRenderer::CreateImage(uint32_t width, uint32_t height,
 
   VkImage vkImage;
   if (vkCreateImage(device, &imageInfo, nullptr, &vkImage) != VK_SUCCESS) {
-    std::cerr << "Failed to create image" << std::endl;
+    std::cerr << "Failed to create image" << '\n';
     return false;
   }
 
@@ -1888,7 +1890,7 @@ bool VulkanRenderer::CreateImage(uint32_t width, uint32_t height,
   VkDeviceMemory vkImageMemory;
   if (vkAllocateMemory(device, &allocInfo, nullptr, &vkImageMemory) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to allocate image memory" << std::endl;
+    std::cerr << "Failed to allocate image memory" << '\n';
     vkDestroyImage(device, vkImage, nullptr);
     return false;
   }
@@ -1919,7 +1921,7 @@ void *VulkanRenderer::CreateImageView(void *image, uint32_t format,
 
   VkImageView imageView;
   if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
-    std::cerr << "Failed to create image view" << std::endl;
+    std::cerr << "Failed to create image view" << '\n';
     return nullptr;
   }
 
@@ -1957,7 +1959,7 @@ bool VulkanRenderer::CreateBuffer(uint64_t size, uint32_t usage,
 
   VkBuffer vkBuffer;
   if (vkCreateBuffer(device, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
-    std::cerr << "Failed to create buffer" << std::endl;
+    std::cerr << "Failed to create buffer" << '\n';
     return false;
   }
 
@@ -1973,7 +1975,7 @@ bool VulkanRenderer::CreateBuffer(uint64_t size, uint32_t usage,
   VkDeviceMemory vkBufferMemory;
   if (vkAllocateMemory(device, &allocInfo, nullptr, &vkBufferMemory) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to allocate buffer memory" << std::endl;
+    std::cerr << "Failed to allocate buffer memory" << '\n';
     vkDestroyBuffer(device, vkBuffer, nullptr);
     return false;
   }
@@ -1987,7 +1989,7 @@ bool VulkanRenderer::CreateBuffer(uint64_t size, uint32_t usage,
 }
 
 bool VulkanRenderer::CreateUniformBuffers() {
-  std::cout << "Creating uniform buffers..." << std::endl;
+  std::cout << "Creating uniform buffers..." << '\n';
 
   uint64_t bufferSize = sizeof(CameraUBO);
 
@@ -2000,7 +2002,7 @@ bool VulkanRenderer::CreateUniformBuffers() {
                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                       m_uniformBuffers[i], m_uniformBuffersMemory[i])) {
-      std::cerr << "Failed to create uniform buffer " << i << std::endl;
+      std::cerr << "Failed to create uniform buffer " << i << '\n';
       return false;
     }
 
@@ -2010,18 +2012,18 @@ bool VulkanRenderer::CreateUniformBuffers() {
         static_cast<VkDeviceMemory>(m_uniformBuffersMemory[i]);
     void *mapped;
     if (vkMapMemory(device, memory, 0, bufferSize, 0, &mapped) != VK_SUCCESS) {
-      std::cerr << "Failed to map uniform buffer memory " << i << std::endl;
+      std::cerr << "Failed to map uniform buffer memory " << i << '\n';
       return false;
     }
     m_uniformBuffersMapped[i] = mapped;
   }
 
-  std::cout << "Uniform buffers created successfully" << std::endl;
+  std::cout << "Uniform buffers created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateDescriptorSetLayout() {
-  std::cout << "Creating descriptor set layout..." << std::endl;
+  std::cout << "Creating descriptor set layout..." << '\n';
 
   // Uniform buffer binding (binding = 0)
   VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -2052,17 +2054,17 @@ bool VulkanRenderer::CreateDescriptorSetLayout() {
   VkDevice device = static_cast<VkDevice>(m_device);
   if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr,
                                   &descriptorSetLayout) != VK_SUCCESS) {
-    std::cerr << "Failed to create descriptor set layout" << std::endl;
+    std::cerr << "Failed to create descriptor set layout" << '\n';
     return false;
   }
 
   m_descriptorSetLayout = static_cast<void *>(descriptorSetLayout);
-  std::cout << "Descriptor set layout created successfully" << std::endl;
+  std::cout << "Descriptor set layout created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateDescriptorPool() {
-  std::cout << "Creating descriptor pool..." << std::endl;
+  std::cout << "Creating descriptor pool..." << '\n';
 
   std::array<VkDescriptorPoolSize, 2> poolSizes{};
 
@@ -2084,17 +2086,17 @@ bool VulkanRenderer::CreateDescriptorPool() {
   VkDevice device = static_cast<VkDevice>(m_device);
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to create descriptor pool" << std::endl;
+    std::cerr << "Failed to create descriptor pool" << '\n';
     return false;
   }
 
   m_descriptorPool = static_cast<void *>(descriptorPool);
-  std::cout << "Descriptor pool created successfully" << std::endl;
+  std::cout << "Descriptor pool created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateDescriptorSets() {
-  std::cout << "Creating descriptor sets..." << std::endl;
+  std::cout << "Creating descriptor sets..." << '\n';
 
   std::vector<VkDescriptorSetLayout> layouts(
       MAX_FRAMES_IN_FLIGHT,
@@ -2110,7 +2112,7 @@ bool VulkanRenderer::CreateDescriptorSets() {
   VkDevice device = static_cast<VkDevice>(m_device);
   if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) !=
       VK_SUCCESS) {
-    std::cerr << "Failed to allocate descriptor sets" << std::endl;
+    std::cerr << "Failed to allocate descriptor sets" << '\n';
     return false;
   }
 
@@ -2156,14 +2158,14 @@ bool VulkanRenderer::CreateDescriptorSets() {
     m_descriptorSets[i] = static_cast<void *>(descriptorSets[i]);
   }
 
-  std::cout << "Descriptor sets created successfully" << std::endl;
+  std::cout << "Descriptor sets created successfully" << '\n';
   return true;
 }
 
 void VulkanRenderer::UpdateUniformBuffer(uint32_t currentImage) {
   if (currentImage >= m_uniformBuffersMapped.size()) {
     std::cerr << "UpdateUniformBuffer: Invalid current image index: "
-              << currentImage << std::endl;
+              << currentImage << '\n';
     return;
   }
 
@@ -2172,12 +2174,12 @@ void VulkanRenderer::UpdateUniformBuffer(uint32_t currentImage) {
     std::memcpy(data, &m_currentCameraUBO, sizeof(CameraUBO));
   } else {
     std::cerr << "UpdateUniformBuffer: Uniform buffer not mapped for frame "
-              << currentImage << std::endl;
+              << currentImage << '\n';
   }
 }
 
 void VulkanRenderer::OnWindowResize(int width, int height) {
-  std::cout << "Window resized to: " << width << "x" << height << std::endl;
+  std::cout << "Window resized to: " << width << "x" << height << '\n';
 
   // Update config dimensions
   m_config.width = static_cast<uint32_t>(width);
@@ -2193,27 +2195,27 @@ void VulkanRenderer::OnWindowResize(int width, int height) {
 
     // Recreate swap chain with new dimensions
     if (!CreateSwapChain()) {
-      std::cerr << "Failed to recreate swap chain after resize" << std::endl;
+      std::cerr << "Failed to recreate swap chain after resize" << '\n';
       return;
     }
 
     if (!CreateImageViews()) {
-      std::cerr << "Failed to recreate image views after resize" << std::endl;
+      std::cerr << "Failed to recreate image views after resize" << '\n';
       return;
     }
 
     if (!CreateDepthResources()) {
       std::cerr << "Failed to recreate depth resources after resize"
-                << std::endl;
+                << '\n';
       return;
     }
 
     if (!CreateFramebuffers()) {
-      std::cerr << "Failed to recreate framebuffers after resize" << std::endl;
+      std::cerr << "Failed to recreate framebuffers after resize" << '\n';
       return;
     }
 
-    std::cout << "Swap chain recreated successfully after resize" << std::endl;
+    std::cout << "Swap chain recreated successfully after resize" << '\n';
   }
 }
 
@@ -2256,7 +2258,7 @@ void VulkanRenderer::SetFrameRateLimit(FrameRateMode mode) {
     std::cout << "120 FPS";
     break;
   }
-  std::cout << std::endl;
+  std::cout << '\n';
 }
 
 void VulkanRenderer::WaitForFrameRate() {
@@ -2276,7 +2278,7 @@ void VulkanRenderer::WaitForFrameRate() {
 }
 
 bool VulkanRenderer::CreateTextureImage() {
-  std::cout << "Creating texture image..." << std::endl;
+  std::cout << "Creating texture image..." << '\n';
 
   // Create a simple 2x2 checkerboard texture for testing
   const uint32_t texWidth = 2;
@@ -2299,7 +2301,7 @@ bool VulkanRenderer::CreateTextureImage() {
                     VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                     stagingBuffer, stagingBufferMemory)) {
-    std::cerr << "Failed to create staging buffer for texture" << std::endl;
+    std::cerr << "Failed to create staging buffer for texture" << '\n';
     return false;
   }
 
@@ -2317,7 +2319,7 @@ bool VulkanRenderer::CreateTextureImage() {
                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage,
                    m_textureImageMemory)) {
-    std::cerr << "Failed to create texture image" << std::endl;
+    std::cerr << "Failed to create texture image" << '\n';
     return false;
   }
 
@@ -2335,27 +2337,27 @@ bool VulkanRenderer::CreateTextureImage() {
   vkFreeMemory(device, static_cast<VkDeviceMemory>(stagingBufferMemory),
                nullptr);
 
-  std::cout << "Texture image created successfully" << std::endl;
+  std::cout << "Texture image created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateTextureImageView() {
-  std::cout << "Creating texture image view..." << std::endl;
+  std::cout << "Creating texture image view..." << '\n';
 
   m_textureImageView = CreateImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB,
                                        VK_IMAGE_ASPECT_COLOR_BIT);
 
   if (m_textureImageView == nullptr) {
-    std::cerr << "Failed to create texture image view" << std::endl;
+    std::cerr << "Failed to create texture image view" << '\n';
     return false;
   }
 
-  std::cout << "Texture image view created successfully" << std::endl;
+  std::cout << "Texture image view created successfully" << '\n';
   return true;
 }
 
 bool VulkanRenderer::CreateTextureSampler() {
-  std::cout << "Creating texture sampler..." << std::endl;
+  std::cout << "Creating texture sampler..." << '\n';
 
   VkSamplerCreateInfo samplerInfo{};
   samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -2379,12 +2381,12 @@ bool VulkanRenderer::CreateTextureSampler() {
   VkDevice device = static_cast<VkDevice>(m_device);
   VkSampler sampler;
   if (vkCreateSampler(device, &samplerInfo, nullptr, &sampler) != VK_SUCCESS) {
-    std::cerr << "Failed to create texture sampler" << std::endl;
+    std::cerr << "Failed to create texture sampler" << '\n';
     return false;
   }
 
   m_textureSampler = static_cast<void *>(sampler);
-  std::cout << "Texture sampler created successfully" << std::endl;
+  std::cout << "Texture sampler created successfully" << '\n';
   return true;
 }
 
@@ -2394,7 +2396,7 @@ void VulkanRenderer::TransitionImageLayout(void *image, uint32_t format,
   // This is a simplified implementation - in a real application you'd want
   // proper command buffer management
   std::cout << "Transitioning image layout (placeholder implementation)"
-            << std::endl;
+            << '\n';
 }
 
 void VulkanRenderer::CopyBufferToImage(void *buffer, void *image,
@@ -2402,7 +2404,7 @@ void VulkanRenderer::CopyBufferToImage(void *buffer, void *image,
   // This is a simplified implementation - in a real application you'd want
   // proper command buffer management
   std::cout << "Copying buffer to image (placeholder implementation)"
-            << std::endl;
+            << '\n';
 }
 
 } // namespace AquaVisual
